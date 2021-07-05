@@ -1,5 +1,16 @@
 services:
-  adgangsstyring_drupal.event_subscriber:
-    class: 'Drupal\adgangsstyring\EventSubscriber\EventSubscriber'
+  adgangsstyring.commands:
+    class: Drupal\adgangsstyring\Commands\Commands
+    arguments:
+      - '@event_dispatcher'
     tags:
-      - { name: 'event_subscriber' }
+      - { name: drush.command }
+
+  adgangsstyring.event_subscriber:
+    class: Drupal\adgangsstyring\EventSubscriber\EventSubscriber
+    arguments:
+      - '@user.data'
+      - '@entity_type.manager'
+      - '@messenger'
+    tags:
+      - { name: event_subscriber }

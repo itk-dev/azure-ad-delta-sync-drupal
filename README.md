@@ -9,6 +9,12 @@ composer require itkdev/adgangsstyring_drupal
 vendor/bin/drush pm:enable adgangsstyring
 ```
 
+## Usage
+
+```sh
+vendor/bin/drush adgangsstyring:run --help
+```
+
 ## Coding standards
 
 ```sh
