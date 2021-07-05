@@ -2,59 +2,37 @@
 
 namespace Drupal\adgangsstyring\EventSubscriber;
 
-use Drupal\adgangsstyring\Form\SettingsForm;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\user\UserDataInterface;
+use Drupal\adgangsstyring\UserManager;
 use ItkDev\Adgangsstyring\Event\CommitEvent;
 use ItkDev\Adgangsstyring\Event\StartEvent;
 use ItkDev\Adgangsstyring\Event\UserDataEvent;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Event subscriber.
  */
 class EventSubscriber implements EventSubscriberInterface {
-  private const MODULE = 'adgangsstyring';
-  private const MARKER = 'delete';
-
   /**
    * The user data.
    *
-   * @var \Drupal\user\UserDataInterface
+   * @var \Drupal\adgangsstyring\UserManager
    */
-  private $userData;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  private $userStorage;
-
-  /**
-   * The module config.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  private $moduleConfig;
+  private $userManager;
 
   /**
    * The messenger.
    *
-   * @var \Drupal\Core\Messenger\MessengerInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  private $messenger;
+  private $logger;
 
   /**
    * EventSubscriber constructor.
    */
-  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, MessengerInterface $messenger) {
-    $this->userData = $userData;
-    $this->userStorage = $entityTypeManager->getStorage('user');
-    $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
-    $this->messenger = $messenger;
+  public function __construct(UserManager $userManager, LoggerInterface $logger) {
+    $this->userManager = $userManager;
+    $this->logger = $logger;
   }
 
   /**
@@ -72,12 +50,8 @@ class EventSubscriber implements EventSubscriberInterface {
    * Start.
    */
   public function start(StartEvent $event) {
-    $userIds = $this->getUserIds();
-    $now = (new \DateTimeImmutable())->format(\DateTimeImmutable::ATOM);
-    foreach ($userIds as $userId) {
-      $this->userData->set(self::MODULE, $userId, self::MARKER, $now);
-    }
-    $this->messenger->addStatus(__METHOD__, TRUE);
+    $this->logger->info(__METHOD__);
+    $this->userManager->markUsersForDeletion();
   }
 
   /**
@@ -85,43 +59,16 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function userData(UserDataEvent $event) {
     $users = $event->getData();
-    foreach ($users as $user) {
-      $username = $user['userPrincipalName'] ?? NULL;
-      /** @var \Drupal\user\Entity\User $user */
-      $user = reset($this->userStorage->loadByProperties(['name' => $username])) ?: NULL;
-      if (NULL !== $user) {
-        $this->messenger->addStatus(sprintf('#users: %s', $user->getAccountName()));
-        $this->userData->delete(self::MODULE, $user->id(), self::MARKER);
-      }
-    }
-    $this->messenger->addStatus(sprintf('%s; #users: %d', __METHOD__, count($users)), TRUE);
+    $this->logger->info(sprintf('%s; #users: %d', __METHOD__, count($users)));
+    $this->userManager->retainUsers($users);
   }
 
   /**
    * Commit.
    */
   public function commit(CommitEvent $event) {
-    $userIds = $this->getUserIds();
-    foreach ($userIds as $userId) {
-      $marker = $this->userData->get(self::MODULE, $userId, self::MARKER);
-      if (NULL !== $marker) {
-        $user = $this->userStorage->load($userId);
-        $user->delete();
-      }
-    }
-
-    $this->messenger->addStatus(__METHOD__, TRUE);
-  }
-
-  /**
-   * Get user ids.
-   */
-  private function getUserIds() {
-    $userIds = $this->userStorage->getQuery()->execute();
-
-    unset($userIds[0]);
-
-    return $userIds;
+    $this->logger->info(__METHOD__);
+    $this->userManager->deleteUsers();
   }
 
 }
