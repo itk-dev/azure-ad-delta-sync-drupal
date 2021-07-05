@@ -7,7 +7,15 @@
             "email": "rimi@aarhus.dk"
         }
     ],
-    "require": {},
+    "repositories": {
+        "itk-dev/adgangsstyring": {
+            "type": "vcs",
+            "url": "https://github.com/itk-dev/adgangsstyring"
+        }
+    },
+    "require": {
+      "itkdev/adgangsstyring": "dev-develop"
+    },
     "require-dev": {
         "drupal/coder": "^8.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
