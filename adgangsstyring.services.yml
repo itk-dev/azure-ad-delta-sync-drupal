@@ -2,6 +2,7 @@ services:
   adgangsstyring.commands:
     class: Drupal\adgangsstyring\Commands\Commands
     arguments:
+      - '@config.factory'
       - '@event_dispatcher'
     tags:
       - { name: drush.command }
@@ -11,6 +12,7 @@ services:
     arguments:
       - '@user.data'
       - '@entity_type.manager'
+      - '@config.factory'
       - '@messenger'
     tags:
       - { name: event_subscriber }

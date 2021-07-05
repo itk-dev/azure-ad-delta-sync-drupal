@@ -2,6 +2,8 @@
 
 namespace Drupal\adgangsstyring\EventSubscriber;
 
+use Drupal\adgangsstyring\Form\SettingsForm;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\user\UserDataInterface;
@@ -32,6 +34,13 @@ class EventSubscriber implements EventSubscriberInterface {
   private $userStorage;
 
   /**
+   * The module config.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  private $moduleConfig;
+
+  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -41,9 +50,10 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * EventSubscriber constructor.
    */
-  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, MessengerInterface $messenger) {
+  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, MessengerInterface $messenger) {
     $this->userData = $userData;
     $this->userStorage = $entityTypeManager->getStorage('user');
+    $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->messenger = $messenger;
   }
 
@@ -67,7 +77,7 @@ class EventSubscriber implements EventSubscriberInterface {
     foreach ($userIds as $userId) {
       $this->userData->set(self::MODULE, $userId, self::MARKER, $now);
     }
-    $this->messenger->addStatus(__METHOD__);
+    $this->messenger->addStatus(__METHOD__, TRUE);
   }
 
   /**
@@ -80,11 +90,11 @@ class EventSubscriber implements EventSubscriberInterface {
       /** @var \Drupal\user\Entity\User $user */
       $user = reset($this->userStorage->loadByProperties(['name' => $username])) ?: NULL;
       if (NULL !== $user) {
-        var_export([$user->getAccountName()]);
+        $this->messenger->addStatus(sprintf('#users: %s', $user->getAccountName()));
         $this->userData->delete(self::MODULE, $user->id(), self::MARKER);
       }
     }
-    $this->messenger->addStatus(sprintf('%s; #users: %d', __METHOD__, count($users)));
+    $this->messenger->addStatus(sprintf('%s; #users: %d', __METHOD__, count($users)), TRUE);
   }
 
   /**

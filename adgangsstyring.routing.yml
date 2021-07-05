@@ -1,0 +1,7 @@
+adgangsstyring.settings:
+  path: '/admin/config/adgangsstyring'
+  defaults:
+    _form: '\Drupal\adgangsstyring\Form\SettingsForm'
+    _title: 'Settings for adgangsstyring'
+  requirements:
+    _permission: 'administer site configuration'
