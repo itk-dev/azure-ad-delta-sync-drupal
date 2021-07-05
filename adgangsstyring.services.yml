@@ -1,0 +1,5 @@
+services:
+  adgangsstyring_drupal.event_subscriber:
+    class: 'Drupal\adgangsstyring\EventSubscriber\EventSubscriber'
+    tags:
+      - { name: 'event_subscriber' }
