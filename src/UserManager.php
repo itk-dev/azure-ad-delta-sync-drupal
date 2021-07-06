@@ -87,6 +87,23 @@ class UserManager {
     if (!isset($userIds)) {
       $userIds = $this->userStorage->getQuery()->execute();
 
+      // Handle excluded roles.
+      $excludedRoles = $this->moduleConfig->get('excluded_roles');
+      if (is_array($excludedRoles)) {
+        $query = $this->userStorage->getQuery();
+        $group = $query->orConditionGroup();
+        foreach ($excludedRoles as $role) {
+          $group->condition('roles', $role);
+        }
+        $roleUserIds = $query
+          ->condition($group)
+          ->execute();
+        foreach ($roleUserIds as $userId) {
+          unset($userIds[$userId]);
+        }
+      }
+
+      // Handle excluded users.
       $excludedUsers = $this->moduleConfig->get('excluded_users');
       if (is_array($excludedUsers)) {
         foreach ($excludedUsers as $userId) {

@@ -122,6 +122,9 @@ class SettingsForm extends ConfigFormBase {
 
     $options = [];
     foreach ($this->roleStorage->loadMultiple() as $role) {
+      if (in_array($role->id(), ['anonymous', 'authenticated'], TRUE)) {
+        continue;
+      }
       $options[$role->id()] = $role->label();
     }
     $form['exclusions']['excluded_roles'] = [
