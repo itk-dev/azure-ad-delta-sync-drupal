@@ -9,11 +9,17 @@ composer require itkdev/adgangsstyring_drupal
 vendor/bin/drush pm:enable adgangsstyring
 ```
 
+Go to `/admin/config/adgangsstyring` to set up the module.
+
 ## Usage
+
+A cron job should run the following command at regular intervals:
 
 ```sh
 vendor/bin/drush adgangsstyring:run --help
 ```
+
+Run `vendor/bin/drush adgangsstyring:run --help` for details on the command.
 
 ## Coding standards
 
