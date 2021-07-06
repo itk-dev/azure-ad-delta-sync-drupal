@@ -19,6 +19,7 @@ services:
       - '@entity_type.manager'
       - '@config.factory'
       - '@logger.channel.adgangsstyring'
+      - '@request_stack'
 
   adgangsstyring.event_subscriber:
     class: Drupal\adgangsstyring\EventSubscriber\EventSubscriber

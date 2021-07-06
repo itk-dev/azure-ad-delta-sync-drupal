@@ -108,6 +108,13 @@ class SettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['user_cancel_method'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('When cancelling an account'),
+      '#default_value' => $config->get('user_cancel_method'),
+      '#required' => TRUE,
+    ] + user_cancel_methods();
+
     $form['exclusions'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Exclusions'),
@@ -145,6 +152,7 @@ class SettingsForm extends ConfigFormBase {
     $config->set('client_secret', $form_state->getValue('client_secret'));
     $config->set('group_id', $form_state->getValue('group_id'));
     $config->set('tenant_id', $form_state->getValue('tenant_id'));
+    $config->set('user_cancel_method', $form_state->getValue('user_cancel_method'));
     $config->set('excluded_roles', $form_state->getValue('excluded_roles'));
     $config->set('excluded_users', array_column($form_state->getValue('excluded_users') ?? [], 'target_id'));
     $config->save();

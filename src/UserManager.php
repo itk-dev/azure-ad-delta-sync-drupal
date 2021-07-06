@@ -5,9 +5,12 @@ namespace Drupal\adgangsstyring;
 use Drupal\adgangsstyring\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Route;
 
 /**
  * User manager.
@@ -45,6 +48,13 @@ class UserManager {
   private $logger;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  private $requestStack;
+
+  /**
    * UserManager constructor.
    *
    * @param \Drupal\user\UserDataInterface $userData
@@ -55,15 +65,18 @@ class UserManager {
    *   The config factory.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, LoggerInterface $logger) {
+  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, LoggerInterface $logger, RequestStack $requestStack) {
     $this->userData = $userData;
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->logger = $logger;
+    $this->requestStack = $requestStack;
   }
 
   /**
@@ -74,9 +87,12 @@ class UserManager {
     if (!isset($userIds)) {
       $userIds = $this->userStorage->getQuery()->execute();
 
-      unset($userIds[0]);
-
-      var_export($userIds);
+      $excludedUsers = $this->moduleConfig->get('excluded_users');
+      if (is_array($excludedUsers)) {
+        foreach ($excludedUsers as $userId) {
+          unset($userIds[$userId]);
+        }
+      }
     }
 
     return $userIds;
@@ -114,13 +130,28 @@ class UserManager {
    * Delete users.
    */
   public function deleteUsers() {
+    $method = $this->moduleConfig->get('user_cancel_method');
+    $deletedUserIds = [];
     $userIds = $this->getUserIds();
     foreach ($userIds as $userId) {
       $marker = $this->userData->get(self::MODULE, $userId, self::MARKER);
       if (NULL !== $marker) {
-        $user = $this->userStorage->load($userId);
-        $this->deleteUser($user);
+        user_cancel([], $userId, $method);
+        $deletedUserIds[] = $userId;
       }
+    }
+
+    if (!empty($deletedUserIds)) {
+      $this->requestStack->getCurrentRequest()
+        // batch_process needs a route in the request (!)
+        ->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
+
+      // Process the batch created by deleteUser.
+      $batch =& batch_get();
+      $batch['progressive'] = FALSE;
+      $batch['source_url'] = 'cron';
+
+      batch_process();
     }
   }
 
@@ -138,18 +169,6 @@ class UserManager {
     $users = $this->userStorage->loadByProperties($properties);
 
     return reset($users) ?: NULL;
-  }
-
-  /**
-   * Delete user.
-   *
-   * @param \Drupal\user\UserInterface $user
-   *   The user.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  private function deleteUser(UserInterface $user) {
-    $user->delete();
   }
 
 }
