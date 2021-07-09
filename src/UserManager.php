@@ -224,7 +224,7 @@ class UserManager {
   }
 
   /**
-   * Get integrstion user ids.
+   * Get module user ids.
    *
    * @param string $module
    *   The module.
