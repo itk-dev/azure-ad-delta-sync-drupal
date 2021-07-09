@@ -9,6 +9,7 @@ services:
     arguments:
       - '@config.factory'
       - '@event_dispatcher'
+      - '@http_client'
       - '@adgangsstyring.user_manager'
     tags:
       - { name: drush.command }
