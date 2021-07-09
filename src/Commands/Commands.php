@@ -3,6 +3,7 @@
 namespace Drupal\adgangsstyring\Commands;
 
 use Drupal\adgangsstyring\Form\SettingsForm;
+use Drupal\adgangsstyring\UserManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use ItkDev\Adgangsstyring\Controller;
@@ -27,20 +28,32 @@ class Commands extends DrushCommands {
   private $eventDispatcher;
 
   /**
+   * The user manager.
+   *
+   * @var \Drupal\adgangsstyring\UserManager
+   */
+  private $userManager;
+
+  /**
    * Commands constructor.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher) {
+  public function __construct(ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher, UserManager $userManager) {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->eventDispatcher = $eventDispatcher;
+    $this->userManager = $userManager;
   }
 
   /**
    * The run command.
    *
    * @command adgangsstyring:run
+   * @option dry-run
    * @usage adgangsstyring:run
    */
-  public function run(array $options = []) {
+  public function run(array $options = ['dry-run' => FALSE]) {
+    $this->userManager->setOptions([
+      'dry-run' => $options['dry-run'],
+    ]);
     $controller = new Controller(
       $this->eventDispatcher,
       [

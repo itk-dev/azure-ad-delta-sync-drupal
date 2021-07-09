@@ -14,7 +14,8 @@
         }
     },
     "require": {
-      "itkdev/adgangsstyring": "dev-develop"
+        "itkdev/adgangsstyring": "dev-develop",
+        "itk-dev/drupal_psr6_cache": "^1.0"
     },
     "require-dev": {
         "drupal/coder": "^8.3",

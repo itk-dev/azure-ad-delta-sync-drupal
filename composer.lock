@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "888ac7a05019a7f8fc28ea9a28683912",
+    "content-hash": "38f13f4ed5bcb9398a0fcebb6630e29a",
     "packages": [
         {
             "name": "escapestudios/symfony2-coding-standard",
@@ -265,6 +265,43 @@
             "time": "2021-04-26T09:17:50+00:00"
         },
         {
+            "name": "itk-dev/drupal_psr6_cache",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/itk-dev/drupal_psr6_cache.git",
+                "reference": "c70b98bdf8c056fa48157c5f92fdc65f7d343708"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/itk-dev/drupal_psr6_cache/zipball/c70b98bdf8c056fa48157c5f92fdc65f7d343708",
+                "reference": "c70b98bdf8c056fa48157c5f92fdc65f7d343708",
+                "shasum": ""
+            },
+            "require": {
+                "psr/cache": "^1.0"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
+                "drupal/coder": "^8.3"
+            },
+            "type": "drupal-module",
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Mikkel Ricky",
+                    "email": "rimi@aarhus.dk"
+                }
+            ],
+            "description": "PSR-6: Caching Interface for Drupal 8+",
+            "homepage": "https://github.com/itk-dev/drupal_psr6_cache",
+            "support": {
+                "issues": "https://github.com/itk-dev/drupal_psr6_cache/issues",
+                "source": "https://github.com/itk-dev/drupal_psr6_cache/tree/1.0.0"
+            },
+            "time": "2021-06-23T12:07:50+00:00"
+        },
+        {
             "name": "itkdev/adgangsstyring",
             "version": "dev-develop",
             "source": {
@@ -323,6 +360,55 @@
                 "issues": "https://github.com/itk-dev/adgangsstyring/issues"
             },
             "time": "2021-07-06T11:28:11+00:00"
+        },
+        {
+            "name": "psr/cache",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/cache.git",
+                "reference": "d11b50ad223250cf17b86e38383413f5a6764bf8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/cache/zipball/d11b50ad223250cf17b86e38383413f5a6764bf8",
+                "reference": "d11b50ad223250cf17b86e38383413f5a6764bf8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Cache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for caching libraries",
+            "keywords": [
+                "cache",
+                "psr",
+                "psr-6"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/cache/tree/master"
+            },
+            "time": "2016-08-06T20:24:11+00:00"
         },
         {
             "name": "psr/event-dispatcher",

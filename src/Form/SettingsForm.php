@@ -100,7 +100,7 @@ class SettingsForm extends ConfigFormBase {
       '#message_list' => [
         'status' => [
           $this->formatPlural(
-            count($this->userManager->getUserIds()),
+            count($this->userManager->loadUserIds()),
             'With the current (saved) settings, one user is considered for cancellation by “adgangsstyring”',
             'With the current (saved) settings, @count users are considered for cancellation by “adgangsstyring”',
           ),

@@ -8,8 +8,9 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\user\UserDataInterface;
+use Drupal\drupal_psr6_cache\Cache\CacheItem;
 use Drupal\user\UserInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
@@ -20,13 +21,14 @@ use Symfony\Component\Routing\Route;
 class UserManager {
   private const MODULE = 'adgangsstyring';
   private const MARKER = 'delete';
+  private const CACHE_KEY_USER_IDS = 'adgangsstyring_user_ids';
 
   /**
    * The user data.
    *
-   * @var \Drupal\user\UserDataInterface
+   * @var \Psr\Cache\CacheItemPoolInterface
    */
-  private $userData;
+  private $cacheItemPool;
 
   /**
    * The user storage.
@@ -71,9 +73,16 @@ class UserManager {
   private $logger;
 
   /**
+   * The options.
+   *
+   * @var array
+   */
+  private $options;
+
+  /**
    * UserManager constructor.
    *
-   * @param \Drupal\user\UserDataInterface $userData
+   * @param \Psr\Cache\CacheItemPoolInterface $cacheItemPool
    *   The user data.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
@@ -91,8 +100,8 @@ class UserManager {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
-    $this->userData = $userData;
+  public function __construct(CacheItemPoolInterface $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
+    $this->cacheItemPool = $cacheItemPool;
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
@@ -102,26 +111,39 @@ class UserManager {
   }
 
   /**
+   * Set options.
+   *
+   * @param array $options
+   *   The options.
+   */
+  public function setOptions(array $options) {
+    $this->options = $options;
+  }
+
+  /**
    * Get user ids.
    */
-  public function getUserIds() {
+  public function loadUserIds() {
     $userIds = &drupal_static(__FUNCTION__);
     if (!isset($userIds)) {
       $userIds = $this->userStorage->getQuery()->execute();
 
       // Handle modules.
-      $modules = array_flip(array_filter($this->moduleConfig->get('modules')));
-      foreach ($modules as $module) {
-        $moduleUsersIds = $this->getModuleUsersIds($module);
-        if (is_array($moduleUsersIds)) {
-          $userIds = array_intersect($userIds, $moduleUsersIds);
+      $modules = $this->moduleConfig->get('modules');
+      if (is_array($modules)) {
+        $modules = array_flip(array_filter($this->moduleConfig->get('modules')));
+        foreach ($modules as $module) {
+          $moduleUsersIds = $this->getModuleUsersIds($module);
+          if (is_array($moduleUsersIds)) {
+            $userIds = array_intersect($userIds, $moduleUsersIds);
+          }
         }
       }
 
       // Handle exclusions.
       $exclusions = $this->moduleConfig->get('exclusions');
       // Handle excluded roles.
-      $excludedRoles = $exclusions['roles'];
+      $excludedRoles = $exclusions['roles'] ?? NULL;
       if (is_array($excludedRoles) && !empty($excludedRoles)) {
         $query = $this->userStorage->getQuery();
         $group = $query->orConditionGroup();
@@ -137,7 +159,7 @@ class UserManager {
       }
 
       // Handle excluded users.
-      $excludedUsers = $exclusions['users'];
+      $excludedUsers = $exclusions['users'] ?? NULL;
       if (is_array($excludedUsers)) {
         foreach ($excludedUsers as $userId) {
           unset($userIds[$userId]);
@@ -152,11 +174,8 @@ class UserManager {
    * Mark users for deletion.
    */
   public function markUsersForDeletion() {
-    $userIds = $this->getUserIds();
-    $now = (new \DateTimeImmutable())->format(\DateTimeImmutable::ATOM);
-    foreach ($userIds as $userId) {
-      $this->userData->set(self::MODULE, $userId, self::MARKER, $now);
-    }
+    $userIds = $this->loadUserIds();
+    $this->setUserIds($userIds);
   }
 
   /**
@@ -166,13 +185,17 @@ class UserManager {
    *   The users to retain.
    */
   public function retainUsers(array $users) {
-    foreach ($users as $user) {
-      $username = $user['userPrincipalName'] ?? NULL;
-      $user = $this->loadUserByProperties(['name' => $username]);
-      if (NULL !== $user) {
-        $this->logger->info(sprintf('#users: %s', $user->getAccountName()));
-        $this->userData->delete(self::MODULE, $user->id(), self::MARKER);
+    $userIds = $this->getUserIds();
+    if (is_array($userIds)) {
+      foreach ($users as $user) {
+        $username = $user['userPrincipalName'] ?? NULL;
+        $user = $this->loadUserByProperties(['name' => $username]);
+        if (NULL !== $user) {
+          $this->logger->info(sprintf('#users: %s', $user->getAccountName()));
+          unset($userIds[$user->id()]);
+        }
       }
+      $this->setUserIds($userIds);
     }
   }
 
@@ -184,26 +207,26 @@ class UserManager {
     $deletedUserIds = [];
     $userIds = $this->getUserIds();
     foreach ($userIds as $userId) {
-      $marker = $this->userData->get(self::MODULE, $userId, self::MARKER);
-      if (NULL !== $marker) {
-        user_cancel([], $userId, $method);
-        $deletedUserIds[] = $userId;
-      }
+      user_cancel([], $userId, $method);
+      $deletedUserIds[] = $userId;
     }
 
     $this->logger->info(sprintf('#users to be deleted: %s', count($deletedUserIds)));
 
-    if (!empty($deletedUserIds)) {
-      $this->requestStack->getCurrentRequest()
-        // batch_process needs a route in the request (!)
-        ->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
+    if (!($this->options['dry-run'] ?? FALSE)) {
+      if (!empty($deletedUserIds)) {
+        $this->logger->info(sprintf('Deleting %s user(s)', count($deletedUserIds)));
+        $this->requestStack->getCurrentRequest()
+          // batch_process needs a route in the request (!)
+          ->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
 
-      // Process the batch created by deleteUser.
-      $batch =& batch_get();
-      $batch['progressive'] = FALSE;
-      $batch['source_url'] = 'cron';
+        // Process the batch created by deleteUser.
+        $batch =& batch_get();
+        $batch['progressive'] = FALSE;
+        $batch['source_url'] = 'cron';
 
-      batch_process();
+        batch_process();
+      }
     }
   }
 
@@ -257,6 +280,23 @@ class UserManager {
       default:
         throw new \RuntimeException(sprintf('Unknown module: %s', $module));
     }
+  }
+
+  /**
+   * Set user ids.
+   */
+  private function setUserIds(array $userIds) {
+    $item = new CacheItem(self::CACHE_KEY_USER_IDS, $userIds, TRUE);
+    $this->cacheItemPool->save($item);
+  }
+
+  /**
+   * Get user ids.
+   */
+  private function getUserIds(): ?array {
+    $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
+
+    return $item->isHit() ? $item->get() : NULL;
   }
 
 }
