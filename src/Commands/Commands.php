@@ -65,13 +65,13 @@ class Commands extends DrushCommands {
     ]);
     $controller = new Controller(
       $this->eventDispatcher,
+      $this->client,
       [
         'clientId' => $this->moduleConfig->get('client_id'),
         'clientSecret' => $this->moduleConfig->get('client_secret'),
         'groupId' => $this->moduleConfig->get('group_id'),
         'tenantId' => $this->moduleConfig->get('tenant_id'),
-      ],
-      $this->client
+      ]
     );
     $controller->run();
   }
