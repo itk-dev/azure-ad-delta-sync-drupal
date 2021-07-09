@@ -2,6 +2,7 @@
 
 namespace Drupal\adgangsstyring\Form;
 
+use Drupal\adgangsstyring\UserManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -37,6 +38,13 @@ class SettingsForm extends ConfigFormBase {
   private $moduleHandler;
 
   /**
+   * The user manager.
+   *
+   * @var \Drupal\adgangsstyring\UserManager
+   */
+  private $userManager;
+
+  /**
    * SettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -45,15 +53,18 @@ class SettingsForm extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
+   * @param \Drupal\adgangsstyring\UserManager $userManager
+   *   The user manager.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler, UserManager $userManager) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
     $this->moduleHandler = $moduleHandler;
+    $this->userManager = $userManager;
   }
 
   /**
@@ -63,7 +74,8 @@ class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('module_handler')
+      $container->get('module_handler'),
+      $container->get('adgangsstyring.user_manager')
     );
   }
 
@@ -82,6 +94,22 @@ class SettingsForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     // Default settings.
     $config = $this->config(self::SETTINGS);
+
+    $form['info'] = [
+      '#theme' => 'status_messages',
+      '#message_list' => [
+        'status' => [
+          $this->formatPlural(
+            count($this->userManager->getUserIds()),
+            'With the current (saved) settings, one user is considered for cancellation by “adgangsstyring”',
+            'With the current (saved) settings, @count users are considered for cancellation by “adgangsstyring”',
+          ),
+        ],
+      ],
+      '#status_headings' => [
+        'status' => $this->t('Information'),
+      ],
+    ];
 
     $defaultsValues = $config->get('general');
     $form['general'] = [
@@ -182,7 +210,8 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Excluded users'),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
-      '#default_value' => $this->userStorage->loadMultiple($defaultsValues['users'] ?? [-1]),
+      // By default we exclude user 1.
+      '#default_value' => $this->userStorage->loadMultiple($defaultsValues['users'] ?? [1]),
       '#tags' => TRUE,
       '#description' => $this->t('Separate by comma.'),
     ];
