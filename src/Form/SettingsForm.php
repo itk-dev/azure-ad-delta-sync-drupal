@@ -4,6 +4,7 @@ namespace Drupal\adgangsstyring\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,20 +30,30 @@ class SettingsForm extends ConfigFormBase {
   private $roleStorage;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  private $moduleHandler;
+
+  /**
    * SettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -51,7 +62,8 @@ class SettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('module_handler')
     );
   }
 
@@ -71,53 +83,85 @@ class SettingsForm extends ConfigFormBase {
     // Default settings.
     $config = $this->config(self::SETTINGS);
 
-    $form['api_settings'] = [
+    $defaultsValues = $config->get('general');
+    $form['general'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('API settings'),
-
-      'client_id' => [
-        '#type' => 'textfield',
-        '#title' => $this->t('Client id'),
-        '#default_value' => $config->get('client_id'),
-        '#description' => $this->t("The client id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_id'] = '…';</code>"),
-        '#required' => TRUE,
-      ],
-
-      'client_secret' => [
-        '#type' => 'textfield',
-        '#title' => $this->t('Client secret'),
-        '#default_value' => $config->get('client_secret'),
-        '#description' => $this->t("The client secret. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_secret'] = '…';</code>"),
-        '#required' => TRUE,
-      ],
-
-      'group_id' => [
-        '#type' => 'textfield',
-        '#title' => $this->t('Group id'),
-        '#default_value' => $config->get('group_id'),
-        '#description' => $this->t("The group id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['group_id'] = '…';</code>"),
-        '#required' => TRUE,
-      ],
-
-      'tenant_id' => [
-        '#type' => 'textfield',
-        '#title' => $this->t('Tenant id'),
-        '#default_value' => $config->get('tenant_id'),
-        '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['tenant_id'] = '…';</code>"),
-        '#required' => TRUE,
-      ],
+      '#title' => $this->t('General settings'),
+      '#tree' => TRUE,
     ];
 
-    $form['user_cancel_method'] = [
+    $form['general']['user_cancel_method'] = [
       '#type' => 'radios',
       '#title' => $this->t('When cancelling an account'),
-      '#default_value' => $config->get('user_cancel_method'),
+      '#default_value' => $defaultsValues['user_cancel_method'] ?? NULL,
       '#required' => TRUE,
     ] + user_cancel_methods();
 
+    $defaultsValues = $config->get('api');
+    $form['api'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('API settings'),
+      '#tree' => TRUE,
+    ];
+
+    $form['api']['client_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Client id'),
+      '#default_value' => $defaultsValues['client_id'] ?? NULL,
+      '#description' => $this->t("The client id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_id'] = '…';</code>"),
+      '#required' => TRUE,
+    ];
+
+    $form['api']['client_secret'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Client secret'),
+      '#default_value' => $defaultsValues['client_secret'] ?? NULL,
+      '#description' => $this->t("The client secret. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_secret'] = '…';</code>"),
+      '#required' => TRUE,
+    ];
+
+    $form['api']['group_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Group id'),
+      '#default_value' => $defaultsValues['group_id'] ?? NULL,
+      '#description' => $this->t("The group id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['group_id'] = '…';</code>"),
+      '#required' => TRUE,
+    ];
+
+    $form['api']['tenant_id'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Tenant id'),
+      '#default_value' => $defaultsValues['tenant_id'] ?? NULL,
+      '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['tenant_id'] = '…';</code>"),
+      '#required' => TRUE,
+    ];
+
+    $defaultsValues = $config->get('modules');
+    $form['modules'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Modules'),
+      '#description' => $this->t('Limit to users authenticated by one of the selected modules. If none are selected all users not excluded otherwise are included.'),
+      '#tree' => TRUE,
+    ];
+
+    $form['modules']['openid_connect'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('OpenId Connect'),
+      '#default_value' => $defaultsValues['openid_connect'] ?? NULL,
+      '#disabled' => !$this->moduleHandler->moduleExists('openid_connect'),
+    ];
+    $form['modules']['samlauth'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('SAML Authentication'),
+      '#default_value' => $defaultsValues['samlauth'] ?? NULL,
+      '#disabled' => !$this->moduleHandler->moduleExists('samlauth'),
+    ];
+
+    $defaultsValues = $config->get('exclusions') ?? [];
     $form['exclusions'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Exclusions'),
+      '#tree' => TRUE,
     ];
 
     $options = [];
@@ -127,18 +171,18 @@ class SettingsForm extends ConfigFormBase {
       }
       $options[$role->id()] = $role->label();
     }
-    $form['exclusions']['excluded_roles'] = [
+    $form['exclusions']['roles'] = [
       '#title' => $this->t('Excluded roles'),
       '#type' => 'checkboxes',
       '#options' => $options,
-      '#default_value' => $config->get('excluded_roles') ?: [],
+      '#default_value' => $defaultsValues['roles'] ?: [],
     ];
 
-    $form['exclusions']['excluded_users'] = [
+    $form['exclusions']['users'] = [
       '#title' => $this->t('Excluded users'),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
-      '#default_value' => $this->userStorage->loadMultiple($config->get('excluded_users') ?: [-1]),
+      '#default_value' => $this->userStorage->loadMultiple($defaultsValues['users'] ?? [-1]),
       '#tags' => TRUE,
       '#description' => $this->t('Separate by comma.'),
     ];
@@ -151,13 +195,13 @@ class SettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(self::SETTINGS);
-    $config->set('client_id', $form_state->getValue('client_id'));
-    $config->set('client_secret', $form_state->getValue('client_secret'));
-    $config->set('group_id', $form_state->getValue('group_id'));
-    $config->set('tenant_id', $form_state->getValue('tenant_id'));
-    $config->set('user_cancel_method', $form_state->getValue('user_cancel_method'));
-    $config->set('excluded_roles', $form_state->getValue('excluded_roles'));
-    $config->set('excluded_users', array_column($form_state->getValue('excluded_users') ?? [], 'target_id'));
+    $config->set('general', $form_state->getValue('general'));
+    $config->set('api', $form_state->getValue('api'));
+    $config->set('modules', $form_state->getValue('modules'));
+    $exclusions = $form_state->getValue('exclusions');
+    // Extract user ids.
+    $exclusions['users'] = array_column($exclusions['users'] ?? [], 'target_id');
+    $config->set('exclusions', $exclusions);
     $config->save();
 
     return parent::submitForm($form, $form_state);

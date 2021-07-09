@@ -4,7 +4,9 @@ namespace Drupal\adgangsstyring;
 
 use Drupal\adgangsstyring\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\user\UserDataInterface;
 use Drupal\user\UserInterface;
@@ -41,11 +43,11 @@ class UserManager {
   private $moduleConfig;
 
   /**
-   * The logger.
+   * The database connection.
    *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\Core\Database\Connection
    */
-  private $logger;
+  private $database;
 
   /**
    * The request stack.
@@ -53,6 +55,20 @@ class UserManager {
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   private $requestStack;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  private $moduleHandler;
+
+  /**
+   * The logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  private $logger;
 
   /**
    * UserManager constructor.
@@ -63,20 +79,26 @@ class UserManager {
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The logger.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The request stack.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, LoggerInterface $logger, RequestStack $requestStack) {
+  public function __construct(UserDataInterface $userData, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
     $this->userData = $userData;
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
-    $this->logger = $logger;
+    $this->database = $database;
     $this->requestStack = $requestStack;
+    $this->moduleHandler = $moduleHandler;
+    $this->logger = $logger;
   }
 
   /**
@@ -87,9 +109,20 @@ class UserManager {
     if (!isset($userIds)) {
       $userIds = $this->userStorage->getQuery()->execute();
 
+      // Handle modules.
+      $modules = array_flip(array_filter($this->moduleConfig->get('modules')));
+      foreach ($modules as $module) {
+        $moduleUsersIds = $this->getModuleUsersIds($module);
+        if (is_array($moduleUsersIds)) {
+          $userIds = array_intersect($userIds, $moduleUsersIds);
+        }
+      }
+
+      // Handle exclusions.
+      $exclusions = $this->moduleConfig->get('exclusions');
       // Handle excluded roles.
-      $excludedRoles = $this->moduleConfig->get('excluded_roles');
-      if (is_array($excludedRoles)) {
+      $excludedRoles = $exclusions['roles'];
+      if (is_array($excludedRoles) && !empty($excludedRoles)) {
         $query = $this->userStorage->getQuery();
         $group = $query->orConditionGroup();
         foreach ($excludedRoles as $role) {
@@ -104,7 +137,7 @@ class UserManager {
       }
 
       // Handle excluded users.
-      $excludedUsers = $this->moduleConfig->get('excluded_users');
+      $excludedUsers = $exclusions['users'];
       if (is_array($excludedUsers)) {
         foreach ($excludedUsers as $userId) {
           unset($userIds[$userId]);
@@ -158,6 +191,8 @@ class UserManager {
       }
     }
 
+    $this->logger->info(sprintf('#users to be deleted: %s', count($deletedUserIds)));
+
     if (!empty($deletedUserIds)) {
       $this->requestStack->getCurrentRequest()
         // batch_process needs a route in the request (!)
@@ -186,6 +221,42 @@ class UserManager {
     $users = $this->userStorage->loadByProperties($properties);
 
     return reset($users) ?: NULL;
+  }
+
+  /**
+   * Get integrstion user ids.
+   *
+   * @param string $module
+   *   The module.
+   *
+   * @return int[]|null
+   *   The user ids.
+   */
+  private function getModuleUsersIds(string $module): ?array {
+    if (!$this->moduleHandler->moduleExists($module)) {
+      return NULL;
+    }
+    switch ($module) {
+      case 'openid_connect':
+        return $this->database
+          ->select('users_data')
+          ->fields('users_data', ['uid'])
+          ->condition('users_data.module', 'openid_connect')
+          ->condition('users_data.name', 'oidc_name')
+          ->execute()
+          ->fetchCol();
+
+      case 'samlauth':
+        return $this->database
+          ->select('authmap')
+          ->fields('authmap', ['uid'])
+          ->condition('authmap.provider', 'samlauth')
+          ->execute()
+          ->fetchCol();
+
+      default:
+        throw new \RuntimeException(sprintf('Unknown module: %s', $module));
+    }
   }
 
 }
