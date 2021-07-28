@@ -1,5 +1,7 @@
 {
     "name": "itkdev/adgangsstyring_drupal",
+    "description": "Adgangsstyring for Drupal",
+    "license": "proprietary",
     "type": "drupal-module",
     "authors": [
         {
