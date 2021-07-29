@@ -1,6 +1,6 @@
 # adgangsstyring-drupal
 
-Drupal module for Adgangsstyring
+Drupal module for [Adgangsstyring](https://github.com/itk-dev/adgangsstyring).
 
 ## Installation
 
@@ -32,7 +32,7 @@ system.
 A cron job should run the following command at regular intervals:
 
 ```sh
-vendor/bin/drush adgangsstyring:run --help
+vendor/bin/drush adgangsstyring:run
 ```
 
 Run `vendor/bin/drush adgangsstyring:run --help` for details on the command.
