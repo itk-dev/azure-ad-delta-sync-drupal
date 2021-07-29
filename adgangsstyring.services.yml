@@ -4,13 +4,18 @@ services:
     arguments:
       - 'adgangsstyring'
 
+  adgangsstyring.handler:
+    class: Drupal\adgangsstyring\Handler\Handler
+    arguments:
+      - '@adgangsstyring.user_manager'
+      - '@logger.channel.adgangsstyring'
+
   adgangsstyring.commands:
     class: Drupal\adgangsstyring\Commands\Commands
     arguments:
       - '@config.factory'
-      - '@event_dispatcher'
       - '@http_client'
-      - '@adgangsstyring.user_manager'
+      - '@adgangsstyring.handler'
     tags:
       - { name: drush.command }
 

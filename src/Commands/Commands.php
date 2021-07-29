@@ -3,12 +3,11 @@
 namespace Drupal\adgangsstyring\Commands;
 
 use Drupal\adgangsstyring\Form\SettingsForm;
-use Drupal\adgangsstyring\UserManager;
+use Drupal\adgangsstyring\Handler\Handler;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\ClientInterface;
 use ItkDev\Adgangsstyring\Controller;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Drush commands.
@@ -36,20 +35,19 @@ class Commands extends DrushCommands {
   private $client;
 
   /**
-   * The user manager.
+   * The handler.
    *
-   * @var \Drupal\adgangsstyring\UserManager
+   * @var \Drupal\adgangsstyring\Handler\Handler
    */
-  private $userManager;
+  private $handler;
 
   /**
    * Commands constructor.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher, ClientInterface $client, UserManager $userManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, ClientInterface $client, Handler $handler) {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
-    $this->eventDispatcher = $eventDispatcher;
     $this->client = $client;
-    $this->userManager = $userManager;
+    $this->handler = $handler;
   }
 
   /**
@@ -60,20 +58,19 @@ class Commands extends DrushCommands {
    * @usage adgangsstyring:run
    */
   public function run(array $options = ['dry-run' => FALSE]) {
-    $this->userManager->setOptions([
+    $this->handler->setOptions([
       'dry-run' => $options['dry-run'],
     ]);
     $controller = new Controller(
-      $this->eventDispatcher,
       $this->client,
       [
-        'clientId' => $this->moduleConfig->get('client_id'),
-        'clientSecret' => $this->moduleConfig->get('client_secret'),
-        'groupId' => $this->moduleConfig->get('group_id'),
-        'tenantId' => $this->moduleConfig->get('tenant_id'),
+        'client_id' => $this->moduleConfig->get('client_id'),
+        'client_secret' => $this->moduleConfig->get('client_secret'),
+        'group_id' => $this->moduleConfig->get('group_id'),
+        'tenant_id' => $this->moduleConfig->get('tenant_id'),
       ]
     );
-    $controller->run();
+    $controller->run($this->handler);
   }
 
 }
