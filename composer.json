@@ -9,12 +9,6 @@
             "email": "rimi@aarhus.dk"
         }
     ],
-    "repositories": {
-        "itk-dev/adgangsstyring": {
-            "type": "vcs",
-            "url": "https://github.com/itk-dev/adgangsstyring"
-        }
-    },
     "require": {
         "drush/drush": "*",
         "itk-dev/drupal_psr6_cache": "^1.0",
