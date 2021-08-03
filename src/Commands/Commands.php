@@ -6,6 +6,7 @@ use Drupal\adgangsstyring\Form\SettingsForm;
 use Drupal\adgangsstyring\Handler\Handler;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
+use Drush\Exceptions\CommandFailedException;
 use GuzzleHttp\ClientInterface;
 use ItkDev\Adgangsstyring\Controller;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -57,14 +58,22 @@ class Commands extends DrushCommands {
    * @command adgangsstyring:run
    * @option dry-run
    *   Don't do anything, but show what will be done.
+   * @option force
+   *   Delete inactive users.
    * @usage adgangsstyring:run
    */
-  public function run(array $options = ['dry-run' => FALSE]) {
+  public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]) {
+    $dryRun = $options['dry-run'];
+    $force = $options['force'];
     $this->handler->setOptions([
-      'dry-run' => $options['dry-run'],
+      'dry-run' => $dryRun,
     ]);
-    if ($options['dry-run']) {
+    if ($dryRun) {
       $this->output->setVerbosity($this->output()->getVerbosity() | OutputInterface::VERBOSITY_VERBOSE);
+    }
+
+    if (!$dryRun && !$force) {
+      throw new CommandFailedException('Please specify either --dry-run or --force option.');
     }
 
     $controller = new Controller(

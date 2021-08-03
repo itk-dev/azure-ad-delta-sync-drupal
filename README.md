@@ -32,7 +32,7 @@ system.
 A cron job should run the following command at regular intervals:
 
 ```sh
-vendor/bin/drush adgangsstyring:run
+vendor/bin/drush adgangsstyring:run --force
 ```
 
 Run `vendor/bin/drush adgangsstyring:run --help` for details on the command.
