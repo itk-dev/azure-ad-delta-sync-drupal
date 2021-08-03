@@ -6,8 +6,10 @@ use Drupal\adgangsstyring\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\drupal_psr6_cache\Cache\CacheItem;
 use Drupal\user\UserInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -19,6 +21,8 @@ use Symfony\Component\Routing\Route;
  * User manager.
  */
 class UserManager {
+  use StringTranslationTrait;
+
   private const MODULE = 'adgangsstyring';
   private const MARKER = 'delete';
   private const CACHE_KEY_USER_IDS = 'adgangsstyring_user_ids';
@@ -174,8 +178,15 @@ class UserManager {
    * Mark users for deletion.
    */
   public function markUsersForDeletion() {
+    $this->validateConfig();
+
     $userIds = $this->loadUserIds();
     $this->setUserIds($userIds);
+    $this->logger->info($this->formatPlural(
+      count($userIds),
+      '1 user marked for deletion.',
+      '@count users marked for deletion.'
+    ));
   }
 
   /**
@@ -185,13 +196,30 @@ class UserManager {
    *   The users to retain.
    */
   public function retainUsers(array $users) {
+    $this->validateConfig();
+    $userIdClaim = $this->moduleConfig->get('api.user_id_claim');
+    $userIdField = $this->moduleConfig->get('general.user_id_field');
+
+    $this->logger->info($this->formatPlural(
+      count($users),
+      'Retaining one user.',
+      'Retaining @count users.'
+    ));
     $userIds = $this->getUserIds();
     if (is_array($userIds)) {
       foreach ($users as $user) {
-        $username = $user['userPrincipalName'] ?? NULL;
-        $user = $this->loadUserByProperties(['name' => $username]);
+        $userId = $user[$userIdClaim] ?? NULL;
+        if (NULL === $userId) {
+          throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
+        }
+        try {
+          $user = $this->loadUserByProperties([$userIdField => $userId]);
+        }
+        catch (QueryException $queryException) {
+          throw new \RuntimeException(sprintf('Cannot load user by field %s', $userIdField));
+        }
         if (NULL !== $user) {
-          $this->logger->info(sprintf('#users: %s', $user->getAccountName()));
+          $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->getAccountName()]));
           unset($userIds[$user->id()]);
         }
       }
@@ -211,11 +239,19 @@ class UserManager {
       $deletedUserIds[] = $userId;
     }
 
-    $this->logger->info(sprintf('#users to be deleted: %s', count($deletedUserIds)));
+    $this->logger->info($this->formatPlural(
+      count($deletedUserIds),
+      'One user to be deleted',
+      '@count users to be deleted'
+    ));
 
     if (!($this->options['dry-run'] ?? FALSE)) {
       if (!empty($deletedUserIds)) {
-        $this->logger->info(sprintf('Deleting %s user(s)', count($deletedUserIds)));
+        $this->logger->info($this->formatPlural(
+          count($deletedUserIds),
+          'Deleting one user',
+        'Deleting @count users'
+        ));
         $this->requestStack->getCurrentRequest()
           // batch_process needs a route in the request (!)
           ->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));
@@ -297,6 +333,21 @@ class UserManager {
     $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
 
     return $item->isHit() ? $item->get() : NULL;
+  }
+
+  /**
+   * Validate config.
+   */
+  private function validateConfig() {
+    $required = [
+      'api.user_id_claim',
+      'general.user_id_field',
+    ];
+    foreach ($required as $name) {
+      if (empty($this->moduleConfig->get($name))) {
+        throw new \InvalidArgumentException(sprintf('Invalid or missing configuration in %s: %s', static::class, $name));
+      }
+    }
   }
 
 }

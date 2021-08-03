@@ -18,25 +18,16 @@ class Handler implements HandlerInterface {
   private $userManager;
 
   /**
-   * The messenger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  private $logger;
-
-  /**
    * EventSubscriber constructor.
    */
   public function __construct(UserManager $userManager, LoggerInterface $logger) {
     $this->userManager = $userManager;
-    $this->logger = $logger;
   }
 
   /**
    * {@inheritdoc}
    */
   public function start(): void {
-    $this->logger->info(__METHOD__);
     $this->userManager->markUsersForDeletion();
   }
 
@@ -44,7 +35,6 @@ class Handler implements HandlerInterface {
    * {@inheritdoc}
    */
   public function retainUsers(array $users): void {
-    $this->logger->info(sprintf('%s; #users: %d', __METHOD__, count($users)));
     $this->userManager->retainUsers($users);
   }
 
@@ -52,7 +42,6 @@ class Handler implements HandlerInterface {
    * {@inheritdoc}
    */
   public function commit(): void {
-    $this->logger->info(__METHOD__);
     $this->userManager->deleteUsers();
   }
 

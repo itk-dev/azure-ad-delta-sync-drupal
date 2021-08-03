@@ -125,6 +125,14 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ] + user_cancel_methods();
 
+    $form['general']['user_id_field'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Drupal user id field'),
+      '#default_value' => $defaultsValues['user_id_field'] ?? 'name',
+      '#description' => $this->t('The Drupal user id field (matching Azure user id claim).'),
+      '#required' => TRUE,
+    ];
+
     $defaultsValues = $config->get('api');
     $form['api'] = [
       '#type' => 'fieldset',
@@ -161,6 +169,14 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Tenant id'),
       '#default_value' => $defaultsValues['tenant_id'] ?? NULL,
       '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['tenant_id'] = '…';</code>"),
+      '#required' => TRUE,
+    ];
+
+    $form['api']['user_id_claim'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Azure user id claim'),
+      '#default_value' => $defaultsValues['user_id_claim'] ?? 'userPrincipalName',
+      '#description' => $this->t('The Azure user id claim (matching Drupal user id field).'),
       '#required' => TRUE,
     ];
 

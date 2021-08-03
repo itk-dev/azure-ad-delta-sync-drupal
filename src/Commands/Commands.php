@@ -8,6 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\ClientInterface;
 use ItkDev\Adgangsstyring\Controller;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Drush commands.
@@ -55,12 +56,17 @@ class Commands extends DrushCommands {
    *
    * @command adgangsstyring:run
    * @option dry-run
+   *   Don't do anything, but show what will be done.
    * @usage adgangsstyring:run
    */
   public function run(array $options = ['dry-run' => FALSE]) {
     $this->handler->setOptions([
       'dry-run' => $options['dry-run'],
     ]);
+    if ($options['dry-run']) {
+      $this->output->setVerbosity($this->output()->getVerbosity() | OutputInterface::VERBOSITY_VERBOSE);
+    }
+
     $controller = new Controller(
       $this->client,
       [
