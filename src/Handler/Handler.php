@@ -4,7 +4,6 @@ namespace Drupal\adgangsstyring\Handler;
 
 use Drupal\adgangsstyring\UserManager;
 use ItkDev\Adgangsstyring\Handler\HandlerInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * A handler.
@@ -20,7 +19,7 @@ class Handler implements HandlerInterface {
   /**
    * EventSubscriber constructor.
    */
-  public function __construct(UserManager $userManager, LoggerInterface $logger) {
+  public function __construct(UserManager $userManager) {
     $this->userManager = $userManager;
   }
 
