@@ -8,7 +8,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use GuzzleHttp\ClientInterface;
-use ItkDev\Adgangsstyring\Controller;
+use ItkDev\AzureAdDeltaSync\Controller;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

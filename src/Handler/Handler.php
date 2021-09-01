@@ -3,7 +3,7 @@
 namespace Drupal\adgangsstyring\Handler;
 
 use Drupal\adgangsstyring\UserManager;
-use ItkDev\Adgangsstyring\Handler\HandlerInterface;
+use ItkDev\AzureAdDeltaSync\Handler\HandlerInterface;
 
 /**
  * A handler.
@@ -26,21 +26,21 @@ class Handler implements HandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function start(): void {
+  public function collectUsersForDeletionList(): void {
     $this->userManager->markUsersForDeletion();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function retainUsers(array $users): void {
+  public function removeUsersFromDeletionList(array $users): void {
     $this->userManager->retainUsers($users);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function commit(): void {
+  public function commitDeletionList(): void {
     $this->userManager->deleteUsers();
   }
 
