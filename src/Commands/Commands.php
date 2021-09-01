@@ -79,10 +79,10 @@ class Commands extends DrushCommands {
     $controller = new Controller(
       $this->client,
       [
-        'client_id' => $this->moduleConfig->get('client_id'),
-        'client_secret' => $this->moduleConfig->get('client_secret'),
-        'group_id' => $this->moduleConfig->get('group_id'),
-        'tenant_id' => $this->moduleConfig->get('tenant_id'),
+        'client_id' => $this->moduleConfig->get('api.client_id'),
+        'client_secret' => $this->moduleConfig->get('api.client_secret'),
+        'group_id' => $this->moduleConfig->get('api.group_id'),
+        'tenant_id' => $this->moduleConfig->get('api.tenant_id'),
       ]
     );
     $controller->run($this->handler);
