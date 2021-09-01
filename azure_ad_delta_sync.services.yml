@@ -1,0 +1,30 @@
+services:
+  logger.channel.azure_ad_delta_sync:
+    parent: logger.channel_base
+    arguments:
+      - 'azure_ad_delta_sync'
+
+  azure_ad_delta_sync.handler:
+    class: Drupal\azure_ad_delta_sync\Handler\Handler
+    arguments:
+      - '@azure_ad_delta_sync.user_manager'
+
+  azure_ad_delta_sync.commands:
+    class: Drupal\azure_ad_delta_sync\Commands\Commands
+    arguments:
+      - '@config.factory'
+      - '@http_client'
+      - '@azure_ad_delta_sync.handler'
+    tags:
+      - { name: drush.command }
+
+  azure_ad_delta_sync.user_manager:
+    class: Drupal\azure_ad_delta_sync\UserManager
+    arguments:
+      - '@drupal_psr6_cache.cache_item_pool'
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@database'
+      - '@request_stack'
+      - '@module_handler'
+      - '@logger.channel.azure_ad_delta_sync'

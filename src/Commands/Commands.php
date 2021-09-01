@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\adgangsstyring\Commands;
+namespace Drupal\azure_ad_delta_sync\Commands;
 
-use Drupal\adgangsstyring\Form\SettingsForm;
-use Drupal\adgangsstyring\Handler\Handler;
+use Drupal\azure_ad_delta_sync\Form\SettingsForm;
+use Drupal\azure_ad_delta_sync\Handler\Handler;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
@@ -39,7 +39,7 @@ class Commands extends DrushCommands {
   /**
    * The handler.
    *
-   * @var \Drupal\adgangsstyring\Handler\Handler
+   * @var \Drupal\azure_ad_delta_sync\Handler\Handler
    */
   private $handler;
 
@@ -55,12 +55,12 @@ class Commands extends DrushCommands {
   /**
    * The run command.
    *
-   * @command adgangsstyring:run
+   * @command azure_ad_delta_sync:run
    * @option dry-run
    *   Don't do anything, but show what will be done.
    * @option force
    *   Delete inactive users.
-   * @usage adgangsstyring:run
+   * @usage azure_ad_delta_sync:run
    */
   public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]) {
     $dryRun = $options['dry-run'];

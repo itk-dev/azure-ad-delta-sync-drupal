@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\adgangsstyring\Handler;
+namespace Drupal\azure_ad_delta_sync\Handler;
 
-use Drupal\adgangsstyring\UserManager;
+use Drupal\azure_ad_delta_sync\UserManager;
 use ItkDev\AzureAdDeltaSync\Handler\HandlerInterface;
 
 /**
@@ -12,7 +12,7 @@ class Handler implements HandlerInterface {
   /**
    * The user data.
    *
-   * @var \Drupal\adgangsstyring\UserManager
+   * @var \Drupal\azure_ad_delta_sync\UserManager
    */
   private $userManager;
 

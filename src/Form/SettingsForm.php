@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\adgangsstyring\Form;
+namespace Drupal\azure_ad_delta_sync\Form;
 
-use Drupal\adgangsstyring\UserManager;
+use Drupal\azure_ad_delta_sync\UserManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Settings form.
  */
 class SettingsForm extends ConfigFormBase {
-  public const SETTINGS = 'adgangsstyring.settings';
+  public const SETTINGS = 'azure_ad_delta_sync.settings';
 
   /**
    * The user storage.
@@ -40,7 +40,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * The user manager.
    *
-   * @var \Drupal\adgangsstyring\UserManager
+   * @var \Drupal\azure_ad_delta_sync\UserManager
    */
   private $userManager;
 
@@ -53,7 +53,7 @@ class SettingsForm extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\adgangsstyring\UserManager $userManager
+   * @param \Drupal\azure_ad_delta_sync\UserManager $userManager
    *   The user manager.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -75,7 +75,7 @@ class SettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
       $container->get('module_handler'),
-      $container->get('adgangsstyring.user_manager')
+      $container->get('azure_ad_delta_sync.user_manager')
     );
   }
 
@@ -83,7 +83,7 @@ class SettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'adgangsstyring_config';
+    return 'azure_ad_delta_sync_config';
   }
 
   /**
@@ -101,8 +101,8 @@ class SettingsForm extends ConfigFormBase {
         'status' => [
           $this->formatPlural(
             count($this->userManager->loadUserIds()),
-            'With the current (saved) settings, one user is considered for cancellation by “adgangsstyring”',
-            'With the current (saved) settings, @count users are considered for cancellation by “adgangsstyring”',
+            'With the current (saved) settings, one user is considered for cancellation by “Azure AD Delta Sync”',
+            'With the current (saved) settings, @count users are considered for cancellation by “Azure AD Delta Sync”',
           ),
         ],
       ],
@@ -144,7 +144,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Client id'),
       '#default_value' => $defaultsValues['client_id'] ?? NULL,
-      '#description' => $this->t("The client id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_id'] = '…';</code>"),
+      '#description' => $this->t("The client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_id'] = '…';</code>"),
       '#required' => TRUE,
     ];
 
@@ -152,7 +152,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Client secret'),
       '#default_value' => $defaultsValues['client_secret'] ?? NULL,
-      '#description' => $this->t("The client secret. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['client_secret'] = '…';</code>"),
+      '#description' => $this->t("The client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_secret'] = '…';</code>"),
       '#required' => TRUE,
     ];
 
@@ -160,7 +160,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Group id'),
       '#default_value' => $defaultsValues['group_id'] ?? NULL,
-      '#description' => $this->t("The group id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['group_id'] = '…';</code>"),
+      '#description' => $this->t("The group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['group_id'] = '…';</code>"),
       '#required' => TRUE,
     ];
 
@@ -168,7 +168,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Tenant id'),
       '#default_value' => $defaultsValues['tenant_id'] ?? NULL,
-      '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['adgangsstyring.settings']['tenant_id'] = '…';</code>"),
+      '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['tenant_id'] = '…';</code>"),
       '#required' => TRUE,
     ];
 

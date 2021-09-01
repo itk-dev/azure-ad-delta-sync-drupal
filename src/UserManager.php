@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\adgangsstyring;
+namespace Drupal\azure_ad_delta_sync;
 
-use Drupal\adgangsstyring\Form\SettingsForm;
+use Drupal\azure_ad_delta_sync\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
@@ -23,9 +23,9 @@ use Symfony\Component\Routing\Route;
 class UserManager {
   use StringTranslationTrait;
 
-  private const MODULE = 'adgangsstyring';
+  private const MODULE = 'azure_ad_delta_sync';
   private const MARKER = 'delete';
-  private const CACHE_KEY_USER_IDS = 'adgangsstyring_user_ids';
+  private const CACHE_KEY_USER_IDS = 'azure_ad_delta_sync_user_ids';
 
   /**
    * The user data.

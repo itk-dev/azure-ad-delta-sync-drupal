@@ -1,5 +1,0 @@
-adgangsstyring.settings:
-  title: 'Adgangsstyring settings'
-  route_name: adgangsstyring.settings
-  description: 'Configure Adgangsstyring settings'
-  parent: system.admin_config_services
