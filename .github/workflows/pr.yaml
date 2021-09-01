@@ -4,13 +4,17 @@ jobs:
   test-composer-files:
     name: Validate composer
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.4', '8.0' ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
       - uses: actions/checkout@master
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
-          extensions: ctype, dom, iconv, json, zip, gd, soap
+          php-version: ${{ matrix.php-versions }}
+          extensions: json
           coverage: none
           tools: composer:v2
       # https://github.com/shivammathur/setup-php#cache-composer-dependencies
@@ -25,18 +29,24 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
       - name: Validate composer files
         run: |
-          composer validate composer.json
+          composer validate --strict composer.json
+          # Check that dependencies resolve.
+          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
   php-check-coding-standards:
     name: PHP - Check Coding Standards
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.4', '8.0' ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
       - uses: actions/checkout@master
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
-          extensions: ctype, dom, iconv, json, zip, gd, soap
+          php-version: ${{ matrix.php-versions }}
+          extensions: json
           coverage: none
           tools: composer:v2
       # https://github.com/shivammathur/setup-php#cache-composer-dependencies
@@ -59,13 +69,17 @@ jobs:
   php-code-analysis:
     name: PHP - Code analysis
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.4', '8.0' ]
+        dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
       - uses: actions/checkout@master
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
-          extensions: ctype, dom, iconv, json, zip, gd, soap
+          php-version: ${{ matrix.php-versions }}
+          extensions: json, gd
           coverage: none
           tools: composer:v2
       # https://github.com/shivammathur/setup-php#cache-composer-dependencies
@@ -87,12 +101,13 @@ jobs:
           mkdir -p drupal/web/modules/custom/adgangsstyring
           cp -r adgangsstyring.* composer.json src drupal/web/modules/custom/adgangsstyring
           # Add our module as a composer repository.
-          composer --no-interaction --working-dir=drupal config repositories.itkdev/adgangsstyring_drupal path web/modules/custom/adgangsstyring
+          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure_ad_delta_sync path web/modules/custom/adgangsstyring
           # Restore Drupal composer repository.
           composer --no-interaction --working-dir=drupal config repositories.drupal composer https://packages.drupal.org/8
 
           # Require our module.
-          composer --no-interaction --working-dir=drupal require 'itkdev/adgangsstyring_drupal:*'
+          composer --no-interaction --working-dir=drupal require 'itk-dev/azure_ad_delta_sync:*'
 
           # Check code
+          composer --no-interaction --working-dir=drupal require --dev drupal/core-dev
           cd drupal/web/modules/custom/adgangsstyring && composer --no-interaction install && vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor *.* src

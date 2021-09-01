@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "drush/drush": "*",
+        "drush/drush": "^9 || ^10",
         "itk-dev/azure-ad-delta-sync": "^1.0",
         "itk-dev/drupal_psr6_cache": "^1.0"
     },
