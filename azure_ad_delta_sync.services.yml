@@ -13,7 +13,7 @@ services:
     class: Drupal\azure_ad_delta_sync\Commands\Commands
     arguments:
       - '@config.factory'
-      - '@http_client'
+      - '@azure_ad_delta_sync.http_client'
       - '@azure_ad_delta_sync.handler'
     tags:
       - { name: drush.command }
@@ -28,3 +28,6 @@ services:
       - '@request_stack'
       - '@module_handler'
       - '@logger.channel.azure_ad_delta_sync'
+
+  azure_ad_delta_sync.http_client:
+    class: Symfony\Component\HttpClient\Psr18Client
