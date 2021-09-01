@@ -1,7 +1,7 @@
 {
-    "name": "itkdev/adgangsstyring_drupal",
-    "description": "Adgangsstyring for Drupal",
-    "license": "proprietary",
+    "name": "itk-dev/azure_ad_delta_sync",
+    "description": "Azure AD Delta Sync for Drupal",
+    "license": "MIT",
     "type": "drupal-module",
     "authors": [
         {
@@ -12,7 +12,7 @@
     "require": {
         "drush/drush": "*",
         "itk-dev/drupal_psr6_cache": "^1.0",
-        "itkdev/adgangsstyring": "dev-develop"
+        "itk-dev/azure-ad-delta-sync": "^1.0"
     },
     "require-dev": {
         "drupal/coder": "^8.3",

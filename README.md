@@ -1,11 +1,11 @@
-# adgangsstyring-drupal
+# Azure AD Delta Sync for Drupal
 
-Drupal module for [Adgangsstyring](https://github.com/itk-dev/adgangsstyring).
+Drupal module for [Azure AD Delta Sync](https://github.com/itk-dev/azure-ad-delta-sync).
 
 ## Installation
 
 ```sh
-composer require itkdev/adgangsstyring_drupal
+composer require itk-dev/azure_ad_delta_sync
 vendor/bin/drush pm:enable adgangsstyring
 ```
 
