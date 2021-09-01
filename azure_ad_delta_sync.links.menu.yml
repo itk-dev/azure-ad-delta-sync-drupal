@@ -1,5 +1,5 @@
 azure_ad_delta_sync.settings:
-  title: 'Azure AD Delta Sync settings'
+  title: 'Azure AD Delta Sync'
   route_name: azure_ad_delta_sync.settings
-  description: 'Configure Azure AD Delta Sync settings'
+  description: 'Configure Azure AD Delta Sync'
   parent: system.admin_config_services
