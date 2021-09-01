@@ -37,7 +37,19 @@ vendor/bin/drush azure_ad_delta_sync:run --force
 
 Run `vendor/bin/drush azure_ad_delta_sync:run --help` for details on the command.
 
-## Coding standards
+## Development
+
+We use a lazy service, `azure_ad_delta_sync.user_manager`
+(`azure_ad_delta_sync.user_manager`), which requires generating a prozy class
+(cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
+
+Run the following command to update the proxy class:
+
+```sh
+php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync/src
+```
+
+### Coding standards
 
 ```sh
 composer install

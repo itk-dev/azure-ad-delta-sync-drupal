@@ -2,7 +2,7 @@
 
 namespace Drupal\azure_ad_delta_sync\Form;
 
-use Drupal\azure_ad_delta_sync\UserManager;
+use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -40,7 +40,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * The user manager.
    *
-   * @var \Drupal\azure_ad_delta_sync\UserManager
+   * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
    */
   private $userManager;
 
@@ -53,13 +53,13 @@ class SettingsForm extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\azure_ad_delta_sync\UserManager $userManager
+   * @param \Drupal\azure_ad_delta_sync\UserManagerInterface $userManager
    *   The user manager.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler, UserManager $userManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler, UserManagerInterface $userManager) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');

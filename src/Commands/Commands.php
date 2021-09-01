@@ -3,7 +3,7 @@
 namespace Drupal\azure_ad_delta_sync\Commands;
 
 use Drupal\azure_ad_delta_sync\Form\SettingsForm;
-use Drupal\azure_ad_delta_sync\Handler\Handler;
+use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
@@ -32,24 +32,24 @@ class Commands extends DrushCommands {
   /**
    * The HTTP client.
    *
-   * @var \GuzzleHttp\ClientInterface
+   * @var \Psr\Http\Client\ClientInterface
    */
   private $client;
 
   /**
-   * The handler.
+   * The user manager.
    *
-   * @var \Drupal\azure_ad_delta_sync\Handler\Handler
+   * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
    */
-  private $handler;
+  private $userManager;
 
   /**
    * Commands constructor.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, ClientInterface $client, Handler $handler) {
+  public function __construct(ConfigFactoryInterface $configFactory, ClientInterface $client, UserManagerInterface $userManager) {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->client = $client;
-    $this->handler = $handler;
+    $this->userManager = $userManager;
   }
 
   /**
@@ -65,7 +65,7 @@ class Commands extends DrushCommands {
   public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]) {
     $dryRun = $options['dry-run'];
     $force = $options['force'];
-    $this->handler->setOptions([
+    $this->userManager->setOptions([
       'dry-run' => $dryRun,
     ]);
     if ($dryRun) {
@@ -85,7 +85,7 @@ class Commands extends DrushCommands {
         'tenant_id' => $this->moduleConfig->get('api.tenant_id'),
       ]
     );
-    $controller->run($this->handler);
+    $controller->run($this->userManager);
   }
 
 }

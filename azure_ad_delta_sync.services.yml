@@ -4,22 +4,18 @@ services:
     arguments:
       - 'azure_ad_delta_sync'
 
-  azure_ad_delta_sync.handler:
-    class: Drupal\azure_ad_delta_sync\Handler\Handler
-    arguments:
-      - '@azure_ad_delta_sync.user_manager'
-
   azure_ad_delta_sync.commands:
     class: Drupal\azure_ad_delta_sync\Commands\Commands
     arguments:
       - '@config.factory'
       - '@azure_ad_delta_sync.http_client'
-      - '@azure_ad_delta_sync.handler'
+      - '@azure_ad_delta_sync.user_manager'
     tags:
       - { name: drush.command }
 
   azure_ad_delta_sync.user_manager:
     class: Drupal\azure_ad_delta_sync\UserManager
+    lazy: true
     arguments:
       - '@drupal_psr6_cache.cache_item_pool'
       - '@entity_type.manager'

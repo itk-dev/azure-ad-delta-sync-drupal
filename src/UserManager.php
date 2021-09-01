@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Route;
 /**
  * User manager.
  */
-class UserManager {
+class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
 
   private const MODULE = 'azure_ad_delta_sync';
@@ -115,19 +115,16 @@ class UserManager {
   }
 
   /**
-   * Set options.
-   *
-   * @param array $options
-   *   The options.
+   * {@inheritdoc}
    */
   public function setOptions(array $options) {
     $this->options = $options;
   }
 
   /**
-   * Get user ids.
+   * {@inheritdoc}
    */
-  public function loadUserIds() {
+  public function loadUserIds(): array {
     $userIds = &drupal_static(__FUNCTION__);
     if (!isset($userIds)) {
       $userIds = $this->userStorage->getQuery()->execute();
@@ -175,9 +172,9 @@ class UserManager {
   }
 
   /**
-   * Mark users for deletion.
+   * {@inheritdoc}
    */
-  public function markUsersForDeletion() {
+  public function collectUsersForDeletionList(): void {
     $this->validateConfig();
 
     $userIds = $this->loadUserIds();
@@ -190,12 +187,9 @@ class UserManager {
   }
 
   /**
-   * Retain users.
-   *
-   * @param array $users
-   *   The users to retain.
+   * {@inheritdoc}
    */
-  public function retainUsers(array $users) {
+  public function removeUsersFromDeletionList(array $users): void {
     $this->validateConfig();
     $userIdClaim = $this->moduleConfig->get('api.user_id_claim');
     $userIdField = $this->moduleConfig->get('general.user_id_field');
@@ -228,9 +222,9 @@ class UserManager {
   }
 
   /**
-   * Delete users.
+   * {@inheritdoc}
    */
-  public function deleteUsers() {
+  public function commitDeletionList(): void {
     $method = $this->moduleConfig->get('user_cancel_method');
     $deletedUserIds = [];
     $userIds = $this->getUserIds();
