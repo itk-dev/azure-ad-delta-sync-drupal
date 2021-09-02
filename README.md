@@ -39,14 +39,16 @@ Run `vendor/bin/drush azure_ad_delta_sync:run --help` for details on the command
 
 ## Development
 
-We use a lazy service, `azure_ad_delta_sync.user_manager`
-(`azure_ad_delta_sync.user_manager`), which requires generating a prozy class
-(cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
+We use a lazy services, `azure_ad_delta_sync.user_manager`
+(`Drupal\azure_ad_delta_sync\UserManager`) and `azure_ad_delta_sync.controller`
+(`Drupal\azure_ad_delta_sync\Controller`), , which requires generating a prozy
+class (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
 
-Run the following command to update the proxy class:
+Run the following commands to update the proxy classes:
 
 ```sh
 php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync/src
+php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller web/modules/contrib/azure_ad_delta_sync/src
 ```
 
 ### Coding standards

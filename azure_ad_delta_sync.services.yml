@@ -4,14 +4,12 @@ services:
     arguments:
       - 'azure_ad_delta_sync'
 
-  azure_ad_delta_sync.commands:
-    class: Drupal\azure_ad_delta_sync\Commands\Commands
+  azure_ad_delta_sync.controller:
+    class: Drupal\azure_ad_delta_sync\Controller
+    lazy: true
     arguments:
-      - '@config.factory'
       - '@azure_ad_delta_sync.http_client'
-      - '@azure_ad_delta_sync.user_manager'
-    tags:
-      - { name: drush.command }
+      - '@config.factory'
 
   azure_ad_delta_sync.user_manager:
     class: Drupal\azure_ad_delta_sync\UserManager
@@ -24,6 +22,14 @@ services:
       - '@request_stack'
       - '@module_handler'
       - '@logger.channel.azure_ad_delta_sync'
+
+  azure_ad_delta_sync.commands:
+    class: Drupal\azure_ad_delta_sync\Commands\Commands
+    arguments:
+      - '@azure_ad_delta_sync.controller'
+      - '@azure_ad_delta_sync.user_manager'
+    tags:
+      - { name: drush.command }
 
   azure_ad_delta_sync.http_client:
     class: Symfony\Component\HttpClient\Psr18Client

@@ -22,7 +22,7 @@
     },
     "scripts": {
         "coding-standards-check/drupal-check": [
-            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor *.* src"
+            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor --exclude-dir=src/ProxyClass *.* src"
         ],
         "coding-standards-check/phpcs": [
             "vendor/bin/phpcs --standard=phpcs.xml.dist"

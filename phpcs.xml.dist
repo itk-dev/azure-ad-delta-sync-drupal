@@ -4,6 +4,7 @@
 
   <file>.</file>
 
+  <exclude-pattern>src/ProxyClass/</exclude-pattern>
   <exclude-pattern>vendor/</exclude-pattern>
 
   <!-- Show progress of the run -->
