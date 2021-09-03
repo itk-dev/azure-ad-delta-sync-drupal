@@ -112,6 +112,7 @@ class UserManager implements UserManagerInterface {
     $this->requestStack = $requestStack;
     $this->moduleHandler = $moduleHandler;
     $this->logger = $logger;
+    $this->validateConfig();
   }
 
   /**
@@ -175,8 +176,6 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function collectUsersForDeletionList(): void {
-    $this->validateConfig();
-
     $userIds = $this->loadUserIds();
     $this->setUserIds($userIds);
     $this->logger->info($this->formatPlural(
@@ -190,7 +189,6 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function removeUsersFromDeletionList(array $users): void {
-    $this->validateConfig();
     $userIdClaim = $this->moduleConfig->get('api.user_id_claim');
     $userIdField = $this->moduleConfig->get('general.user_id_field');
 

@@ -95,21 +95,39 @@ class SettingsForm extends ConfigFormBase {
     // Default settings.
     $config = $this->config(self::SETTINGS);
 
-    $form['info'] = [
-      '#theme' => 'status_messages',
-      '#message_list' => [
-        'status' => [
-          $this->formatPlural(
-            count($this->userManager->loadUserIds()),
-            'With the current (saved) settings, one user is considered for cancellation by “Azure AD Delta Sync”',
-            'With the current (saved) settings, @count users are considered for cancellation by “Azure AD Delta Sync”',
-          ),
+    // Using the user manager will throw an exception if it's not configured
+    // correctly (which is done by this form), so we try-catch use of the
+    // manager.
+    try {
+      $form['info'] = [
+        '#theme' => 'status_messages',
+        '#message_list' => [
+          'status' => [
+            $this->formatPlural(
+              count($this->userManager->loadUserIds()),
+              'With the current (saved) settings, one user is considered for cancellation by “Azure AD Delta Sync”',
+              'With the current (saved) settings, @count users are considered for cancellation by “Azure AD Delta Sync”',
+            ),
+          ],
         ],
-      ],
-      '#status_headings' => [
-        'status' => $this->t('Information'),
-      ],
-    ];
+        '#status_headings' => [
+          'status' => $this->t('Information'),
+        ],
+      ];
+    }
+    catch (\Exception $exception) {
+      $form['info'] = [
+        '#theme' => 'status_messages',
+        '#message_list' => [
+          'warning' => [
+            $this->t('Some settings are not valid (@message)', ['@message' => $exception->getMessage()]),
+          ],
+        ],
+        '#status_headings' => [
+          'warning' => $this->t('Warning'),
+        ],
+      ];
+    }
 
     $defaultsValues = $config->get('general');
     $form['general'] = [
