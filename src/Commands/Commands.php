@@ -63,6 +63,7 @@ class Commands extends DrushCommands {
     $force = $options['force'];
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
+      'debug' => $this->output->isDebug(),
     ]);
     if ($dryRun) {
       $this->output->setVerbosity($this->output()->getVerbosity() | OutputInterface::VERBOSITY_VERBOSE);

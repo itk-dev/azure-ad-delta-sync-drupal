@@ -6,12 +6,10 @@ use Drupal\azure_ad_delta_sync\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Entity\Query\QueryException;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\drupal_psr6_cache\Cache\CacheItem;
-use Drupal\user\UserInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -177,7 +175,7 @@ class UserManager implements UserManagerInterface {
    */
   public function collectUsersForDeletionList(): void {
     $userIds = $this->loadUserIds();
-    $this->setUserIds($userIds);
+    $this->cacheUserIdsForDeletion($userIds);
     $this->logger->info($this->formatPlural(
       count($userIds),
       '1 user marked for deletion.',
@@ -197,25 +195,26 @@ class UserManager implements UserManagerInterface {
       'Retaining one user.',
       'Retaining @count users.'
     ));
-    $userIds = $this->getUserIds();
-    if (is_array($userIds)) {
+    $cachedUserIdsForDeletion = $this->getCachedUserIdsForDeletion();
+    if (is_array($cachedUserIdsForDeletion)) {
+      $userIdsToKeep = array_map(
+        static function (array $user) use ($userIdClaim) {
+          if (!isset($user[$userIdClaim])) {
+            throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
+          }
+          return $user[$userIdClaim];
+        },
+        $users
+      );
+
+      $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
+
+      $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
       foreach ($users as $user) {
-        $userId = $user[$userIdClaim] ?? NULL;
-        if (NULL === $userId) {
-          throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
-        }
-        try {
-          $user = $this->loadUserByProperties([$userIdField => $userId]);
-        }
-        catch (QueryException $queryException) {
-          throw new \RuntimeException(sprintf('Cannot load user by field %s', $userIdField));
-        }
-        if (NULL !== $user) {
-          $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->getAccountName()]));
-          unset($userIds[$user->id()]);
-        }
+        $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
+        unset($cachedUserIdsForDeletion[$user->id()]);
       }
-      $this->setUserIds($userIds);
+      $this->cacheUserIdsForDeletion($cachedUserIdsForDeletion);
     }
   }
 
@@ -225,7 +224,7 @@ class UserManager implements UserManagerInterface {
   public function commitDeletionList(): void {
     $method = $this->moduleConfig->get('user_cancel_method');
     $deletedUserIds = [];
-    $userIds = $this->getUserIds();
+    $userIds = $this->getCachedUserIdsForDeletion();
     foreach ($userIds as $userId) {
       user_cancel([], $userId, $method);
       $deletedUserIds[] = $userId;
@@ -236,13 +235,19 @@ class UserManager implements UserManagerInterface {
       'One user to be deleted',
       '@count users to be deleted'
     ));
+    if ($this->options['debug'] ?? FALSE) {
+      $users = $this->userStorage->loadMultiple($deletedUserIds);
+      foreach ($users as $user) {
+        $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+      }
+    }
 
     if (!($this->options['dry-run'] ?? FALSE)) {
       if (!empty($deletedUserIds)) {
         $this->logger->info($this->formatPlural(
           count($deletedUserIds),
           'Deleting one user',
-        'Deleting @count users'
+          'Deleting @count users'
         ));
         $this->requestStack->getCurrentRequest()
           // batch_process needs a route in the request (!)
@@ -256,22 +261,6 @@ class UserManager implements UserManagerInterface {
         batch_process();
       }
     }
-  }
-
-  /**
-   * Load user by properties.
-   *
-   * @param array $properties
-   *   The properties.
-   *
-   * @return \Drupal\user\UserInterface|null
-   *   The user if any.
-   */
-  private function loadUserByProperties(array $properties = []): ?UserInterface {
-    /** @var \Drupal\user\UserInterface[] $users */
-    $users = $this->userStorage->loadByProperties($properties);
-
-    return reset($users) ?: NULL;
   }
 
   /**
@@ -313,7 +302,7 @@ class UserManager implements UserManagerInterface {
   /**
    * Set user ids.
    */
-  private function setUserIds(array $userIds) {
+  private function cacheUserIdsForDeletion(array $userIds) {
     $item = new CacheItem(self::CACHE_KEY_USER_IDS, $userIds, TRUE);
     $this->cacheItemPool->save($item);
   }
@@ -321,7 +310,7 @@ class UserManager implements UserManagerInterface {
   /**
    * Get user ids.
    */
-  private function getUserIds(): ?array {
+  private function getCachedUserIdsForDeletion(): ?array {
     $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
 
     return $item->isHit() ? $item->get() : NULL;
