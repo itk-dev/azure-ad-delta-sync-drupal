@@ -114,7 +114,7 @@ class SettingsForm extends ConfigFormBase {
     $defaultsValues = $config->get('general');
     $form['general'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('General settings'),
+      '#title' => $this->t('Drupal user settings'),
       '#tree' => TRUE,
     ];
 
@@ -123,52 +123,57 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('When cancelling an account'),
       '#default_value' => $defaultsValues['user_cancel_method'] ?? NULL,
       '#required' => TRUE,
+      '#description' => $this->t('Method used to cancel/delete a Drupal user account.'),
     ] + user_cancel_methods();
 
     $form['general']['user_id_field'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Drupal user id field'),
       '#default_value' => $defaultsValues['user_id_field'] ?? 'name',
-      '#description' => $this->t('The Drupal user id field (matching Azure user id claim).'),
+      '#description' => $this->t('The Drupal user id field used to match with an Azure user id (cf. Azure user id claim).'),
       '#required' => TRUE,
     ];
 
     $defaultsValues = $config->get('api');
     $form['api'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('API settings'),
+      '#title' => $this->t('Azure API settings'),
       '#tree' => TRUE,
+    ];
+
+    $form['api']['description'] = [
+      '#markup' => $this->t('<p>Settings for connection to the Azure API to get users. Your IdP provider can provide the actual values needed and, for security reasons, these should be set in <code>settings.local.php</code>.</p>'),
     ];
 
     $form['api']['client_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Client id'),
+      '#title' => $this->t('Azure client id'),
       '#default_value' => $defaultsValues['client_id'] ?? NULL,
-      '#description' => $this->t("The client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_id'] = '…';</code>"),
+      '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
     $form['api']['client_secret'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Client secret'),
+      '#title' => $this->t('Azure client secret'),
       '#default_value' => $defaultsValues['client_secret'] ?? NULL,
-      '#description' => $this->t("The client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_secret'] = '…';</code>"),
+      '#description' => $this->t("The Azure client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_secret'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
     $form['api']['group_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Group id'),
+      '#title' => $this->t('Azure group id'),
       '#default_value' => $defaultsValues['group_id'] ?? NULL,
-      '#description' => $this->t("The group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['group_id'] = '…';</code>"),
+      '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['group_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
     $form['api']['tenant_id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Tenant id'),
+      '#title' => $this->t('Azure tenant id'),
       '#default_value' => $defaultsValues['tenant_id'] ?? NULL,
-      '#description' => $this->t("The tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['tenant_id'] = '…';</code>"),
+      '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['tenant_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
@@ -176,7 +181,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Azure user id claim'),
       '#default_value' => $defaultsValues['user_id_claim'] ?? 'userPrincipalName',
-      '#description' => $this->t('The Azure user id claim (matching Drupal user id field).'),
+      '#description' => $this->t('The Azure user id claim matching a Drupal user id (cf. Drupal user id field).'),
       '#required' => TRUE,
     ];
 
@@ -184,7 +189,7 @@ class SettingsForm extends ConfigFormBase {
     $form['modules'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Modules'),
-      '#description' => $this->t('Limit to users authenticated by one of the selected modules. If none are selected all users not excluded otherwise are included.'),
+      '#description' => $this->t('Handle only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users not excluded otherwise are included.'),
       '#tree' => TRUE,
     ];
 
@@ -206,6 +211,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'fieldset',
       '#title' => $this->t('Exclusions'),
       '#tree' => TRUE,
+      '#description' => $this->t('Exclude some users from being deleted by Azure AD Delta Sync.'),
     ];
 
     $options = [];
@@ -220,6 +226,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'checkboxes',
       '#options' => $options,
       '#default_value' => $defaultsValues['roles'] ?: [],
+      '#description' => $this->t('Select Drupal user roles to exclude.'),
     ];
 
     $form['exclusions']['users'] = [
@@ -229,7 +236,7 @@ class SettingsForm extends ConfigFormBase {
       // By default we exclude user 1.
       '#default_value' => $this->userStorage->loadMultiple($defaultsValues['users'] ?? [1]),
       '#tags' => TRUE,
-      '#description' => $this->t('Separate by comma.'),
+      '#description' => $this->t('Select Drupal users to exclude (Separate by comma).'),
     ];
 
     return $form;
