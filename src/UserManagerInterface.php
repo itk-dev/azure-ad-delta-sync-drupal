@@ -18,11 +18,11 @@ interface UserManagerInterface extends HandlerInterface {
   public function setOptions(array $options);
 
   /**
-   * Get user ids.
+   * Load managed user ids.
    *
    * @return int[]
-   *   The user ids.
+   *   The managed user ids.
    */
-  public function loadUserIds(): array;
+  public function loadManagedUserIds(): array;
 
 }

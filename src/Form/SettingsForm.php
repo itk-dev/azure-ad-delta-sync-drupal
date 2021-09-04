@@ -104,9 +104,9 @@ class SettingsForm extends ConfigFormBase {
         '#message_list' => [
           'status' => [
             $this->formatPlural(
-              count($this->userManager->loadUserIds()),
-              'With the current (saved) settings, one user is considered for cancellation by “Azure AD Delta Sync”',
-              'With the current (saved) settings, @count users are considered for cancellation by “Azure AD Delta Sync”',
+              count($this->userManager->loadManagedUserIds()),
+              'With the current (saved) settings, one user is managed by “Azure AD Delta Sync”',
+              'With the current (saved) settings, @count users are managed by “Azure AD Delta Sync”',
             ),
           ],
         ],

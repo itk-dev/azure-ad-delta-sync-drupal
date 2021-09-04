@@ -78,9 +78,9 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
-        public function loadUserIds(): array
+        public function loadManagedUserIds(): array
         {
-            return $this->lazyLoadItself()->loadUserIds();
+            return $this->lazyLoadItself()->loadManagedUserIds();
         }
 
         /**

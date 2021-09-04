@@ -5,6 +5,7 @@ namespace Drupal\azure_ad_delta_sync;
 use Drupal\azure_ad_delta_sync\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
@@ -123,48 +124,44 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function loadUserIds(): array {
+  public function loadManagedUserIds(): array {
     $userIds = &drupal_static(__FUNCTION__);
     if (!isset($userIds)) {
-      $userIds = $this->userStorage->getQuery()->execute();
+      $query = $this->userStorage->getQuery();
+      // Never delete user 0 and 1.
+      $query->condition('uid', [0, 1], 'NOT IN');
 
-      // Handle modules.
       $modules = $this->moduleConfig->get('modules');
       if (is_array($modules)) {
-        $modules = array_flip(array_filter($this->moduleConfig->get('modules')));
-        foreach ($modules as $module) {
-          $moduleUsersIds = $this->getModuleUsersIds($module);
-          if (is_array($moduleUsersIds)) {
-            $userIds = array_intersect($userIds, $moduleUsersIds);
+        $modules = array_keys(array_filter($this->moduleConfig->get('modules')));
+        if (!empty($modules)) {
+          $orCondition = $query->orConditionGroup();
+          foreach ($modules as $module) {
+            $moduleUserIdQuery = $this->getModuleUserIdsQuery($module);
+            if (NULL !== $moduleUserIdQuery) {
+              $orCondition->condition('uid', $moduleUserIdQuery, 'IN');
+            }
           }
+          $query->condition($orCondition);
         }
       }
 
-      // Handle exclusions.
-      $exclusions = $this->moduleConfig->get('exclusions');
-      // Handle excluded roles.
-      $excludedRoles = $exclusions['roles'] ?? NULL;
-      if (is_array($excludedRoles) && !empty($excludedRoles)) {
-        $query = $this->userStorage->getQuery();
-        $group = $query->orConditionGroup();
-        foreach ($excludedRoles as $role) {
-          $group->condition('roles', $role);
-        }
-        $roleUserIds = $query
-          ->condition($group)
-          ->execute();
-        foreach ($roleUserIds as $userId) {
-          unset($userIds[$userId]);
+      $exclude = $this->moduleConfig->get('exclusions');
+      if (isset($exclude['roles'])) {
+        $roles = array_filter($exclude['roles']);
+        if (!empty($roles)) {
+          $query->condition('roles', $roles, 'NOT IN');
         }
       }
 
-      // Handle excluded users.
-      $excludedUsers = $exclusions['users'] ?? NULL;
-      if (is_array($excludedUsers)) {
-        foreach ($excludedUsers as $userId) {
-          unset($userIds[$userId]);
+      if (isset($exclude['users'])) {
+        $users = $exclude['users'];
+        if (!empty($users)) {
+          $query->condition('uid', $users, 'NOT IN');
         }
       }
+
+      $userIds = $query->execute();
     }
 
     return $userIds;
@@ -174,7 +171,7 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function collectUsersForDeletionList(): void {
-    $userIds = $this->loadUserIds();
+    $userIds = $this->loadManagedUserIds();
     $this->cacheUserIdsForDeletion($userIds);
     $this->logger->info($this->formatPlural(
       count($userIds),
@@ -264,15 +261,15 @@ class UserManager implements UserManagerInterface {
   }
 
   /**
-   * Get module user ids.
+   * Get module user ids select query.
    *
    * @param string $module
    *   The module.
    *
-   * @return int[]|null
-   *   The user ids.
+   * @return null|\Drupal\Core\Database\Query\SelectInterface
+   *   The select query.
    */
-  private function getModuleUsersIds(string $module): ?array {
+  private function getModuleUserIdsQuery(string $module): ?SelectInterface {
     if (!$this->moduleHandler->moduleExists($module)) {
       return NULL;
     }
@@ -282,17 +279,13 @@ class UserManager implements UserManagerInterface {
           ->select('users_data')
           ->fields('users_data', ['uid'])
           ->condition('users_data.module', 'openid_connect')
-          ->condition('users_data.name', 'oidc_name')
-          ->execute()
-          ->fetchCol();
+          ->condition('users_data.name', 'oidc_name');
 
       case 'samlauth':
         return $this->database
           ->select('authmap')
           ->fields('authmap', ['uid'])
-          ->condition('authmap.provider', 'samlauth')
-          ->execute()
-          ->fetchCol();
+          ->condition('authmap.provider', 'samlauth');
 
       default:
         throw new \RuntimeException(sprintf('Unknown module: %s', $module));
