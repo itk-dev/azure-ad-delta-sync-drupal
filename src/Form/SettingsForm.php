@@ -138,10 +138,10 @@ class SettingsForm extends ConfigFormBase {
 
     $form['general']['user_cancel_method'] = [
       '#type' => 'radios',
-      '#title' => $this->t('When cancelling an account'),
+      '#title' => $this->t('Cancel account method'),
       '#default_value' => $defaultValues['user_cancel_method'] ?? NULL,
       '#required' => TRUE,
-      '#description' => $this->t('Method used to cancel/delete a Drupal user account.'),
+      '#description' => $this->t('Method used to cancel a Drupal user account.'),
     ] + user_cancel_methods();
 
     $form['general']['user_id_field'] = [
