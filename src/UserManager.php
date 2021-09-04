@@ -131,9 +131,9 @@ class UserManager implements UserManagerInterface {
       // Never delete user 0 and 1.
       $query->condition('uid', [0, 1], 'NOT IN');
 
-      $modules = $this->moduleConfig->get('modules');
+      $modules = $this->moduleConfig->get('include.modules');
       if (is_array($modules)) {
-        $modules = array_keys(array_filter($this->moduleConfig->get('modules')));
+        $modules = array_filter($modules);
         if (!empty($modules)) {
           $orCondition = $query->orConditionGroup();
           foreach ($modules as $module) {
@@ -146,7 +146,7 @@ class UserManager implements UserManagerInterface {
         }
       }
 
-      $exclude = $this->moduleConfig->get('exclusions');
+      $exclude = $this->moduleConfig->get('exclude');
       if (isset($exclude['roles'])) {
         $roles = array_filter($exclude['roles']);
         if (!empty($roles)) {
@@ -184,8 +184,8 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function removeUsersFromDeletionList(array $users): void {
-    $userIdClaim = $this->moduleConfig->get('api.user_id_claim');
-    $userIdField = $this->moduleConfig->get('general.user_id_field');
+    $userIdClaim = $this->moduleConfig->get('azure.user_id_claim');
+    $userIdField = $this->moduleConfig->get('drupal.user_id_field');
 
     $this->logger->info($this->formatPlural(
       count($users),
@@ -314,8 +314,8 @@ class UserManager implements UserManagerInterface {
    */
   private function validateConfig() {
     $required = [
-      'api.user_id_claim',
-      'general.user_id_field',
+      'azure.user_id_claim',
+      'drupal.user_id_field',
     ];
     foreach ($required as $name) {
       if (empty($this->moduleConfig->get($name))) {

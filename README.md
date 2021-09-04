@@ -11,15 +11,15 @@ vendor/bin/drush pm:enable azure_ad_delta_sync
 
 Go to `/admin/config/azure_ad_delta_sync` to set up the module.
 
-You will probably want to add api keys in `settings.local.php`, i.e.
+You will probably want to add Azure api keys in `settings.local.php`, i.e.
 
 ```php
 # settings.local.php
 
-$config['azure_ad_delta_sync.settings']['api']['client_id'] = '…';
-$config['azure_ad_delta_sync.settings']['api']['client_secret'] = '…';
-$config['azure_ad_delta_sync.settings']['api']['group_id'] = '…';
-$config['azure_ad_delta_sync.settings']['api']['tenant_id'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['client_secret'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';
 ```
 
 Furthermore, you may want to install the [Config

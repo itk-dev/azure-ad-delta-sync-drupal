@@ -129,14 +129,14 @@ class SettingsForm extends ConfigFormBase {
       ];
     }
 
-    $defaultValues = $config->get('general');
-    $form['general'] = [
+    $defaultValues = $config->get('drupal');
+    $form['drupal'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Drupal user settings'),
       '#tree' => TRUE,
     ];
 
-    $form['general']['user_cancel_method'] = [
+    $form['drupal']['user_cancel_method'] = [
       '#type' => 'radios',
       '#title' => $this->t('Cancel account method'),
       '#default_value' => $defaultValues['user_cancel_method'] ?? NULL,
@@ -144,7 +144,7 @@ class SettingsForm extends ConfigFormBase {
       '#description' => $this->t('Method used to cancel a Drupal user account.'),
     ] + user_cancel_methods();
 
-    $form['general']['user_id_field'] = [
+    $form['drupal']['user_id_field'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Drupal user id field'),
       '#default_value' => $defaultValues['user_id_field'] ?? 'name',
@@ -152,50 +152,50 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $defaultValues = $config->get('api');
-    $form['api'] = [
+    $defaultValues = $config->get('azure');
+    $form['azure'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Azure API settings'),
       '#tree' => TRUE,
     ];
 
-    $form['api']['description'] = [
+    $form['azure']['description'] = [
       '#markup' => $this->t('<p>Settings for connection to the Azure API to get users. Your IdP provider can provide the actual values needed and, for security reasons, these should be set in <code>settings.local.php</code>.</p>'),
     ];
 
-    $form['api']['client_id'] = [
+    $form['azure']['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure client id'),
       '#default_value' => $defaultValues['client_id'] ?? NULL,
-      '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_id'] = '…';</code>."),
+      '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
-    $form['api']['client_secret'] = [
+    $form['azure']['client_secret'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure client secret'),
       '#default_value' => $defaultValues['client_secret'] ?? NULL,
-      '#description' => $this->t("The Azure client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_secret'] = '…';</code>."),
+      '#description' => $this->t("The Azure client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['client_secret'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
-    $form['api']['group_id'] = [
+    $form['azure']['group_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure group id'),
       '#default_value' => $defaultValues['group_id'] ?? NULL,
-      '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['group_id'] = '…';</code>."),
+      '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
-    $form['api']['tenant_id'] = [
+    $form['azure']['tenant_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure tenant id'),
       '#default_value' => $defaultValues['tenant_id'] ?? NULL,
-      '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['tenant_id'] = '…';</code>."),
+      '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
-    $form['api']['user_id_claim'] = [
+    $form['azure']['user_id_claim'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure user id claim'),
       '#default_value' => $defaultValues['user_id_claim'] ?? 'userPrincipalName',
@@ -203,31 +203,34 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $defaultValues = $config->get('modules');
-    $form['modules'] = [
+    $defaultValues = $config->get('include');
+    $form['include'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Modules'),
-      '#description' => $this->t('Handle only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users not excluded otherwise are included.'),
+      '#title' => $this->t('Include users'),
       '#tree' => TRUE,
     ];
 
-    $form['modules']['openid_connect'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('OpenId Connect'),
-      '#default_value' => $defaultValues['openid_connect'] ?? NULL,
-      '#disabled' => !$this->moduleHandler->moduleExists('openid_connect'),
-    ];
-    $form['modules']['samlauth'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('SAML Authentication'),
-      '#default_value' => $defaultValues['samlauth'] ?? NULL,
-      '#disabled' => !$this->moduleHandler->moduleExists('samlauth'),
+    $options = array_filter(
+      [
+        'openid_connect' => $this->t('OpenId Connect'),
+        'samlauth' => $this->t('SAML Authentication'),
+      ],
+      [$this->moduleHandler, 'moduleExists'],
+      ARRAY_FILTER_USE_KEY
+    );
+
+    $form['include']['modules'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Modules'),
+      '#options' => $options,
+      '#default_value' => $defaultValues['modules'] ?? [],
+      '#description' => $this->t('Manged only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
     ];
 
-    $defaultValues = $config->get('exclusions') ?? [];
-    $form['exclusions'] = [
+    $defaultValues = $config->get('exclude') ?? [];
+    $form['exclude'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Exclusions'),
+      '#title' => $this->t('Exclude users'),
       '#tree' => TRUE,
       '#description' => $this->t('Exclude some users from being deleted by Azure AD Delta Sync.'),
     ];
@@ -239,22 +242,22 @@ class SettingsForm extends ConfigFormBase {
       }
       $options[$role->id()] = $role->label();
     }
-    $form['exclusions']['roles'] = [
+    $form['exclude']['roles'] = [
       '#title' => $this->t('Excluded roles'),
       '#type' => 'checkboxes',
       '#options' => $options,
-      '#default_value' => $defaultValues['roles'] ?: [],
+      '#default_value' => $defaultValues['roles'] ?? [],
       '#description' => $this->t('Select Drupal user roles to exclude.'),
     ];
 
-    $form['exclusions']['users'] = [
+    $form['exclude']['users'] = [
       '#title' => $this->t('Excluded users'),
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
       // By default we exclude user 1.
       '#default_value' => $this->userStorage->loadMultiple($defaultValues['users'] ?? [1]),
       '#tags' => TRUE,
-      '#description' => $this->t('Select Drupal users to exclude (Separate by comma).'),
+      '#description' => $this->t('Select Drupal users to exclude (separate by comma).'),
     ];
 
     return $form;
@@ -265,13 +268,13 @@ class SettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config(self::SETTINGS);
-    $config->set('general', $form_state->getValue('general'));
-    $config->set('api', $form_state->getValue('api'));
-    $config->set('modules', $form_state->getValue('modules'));
-    $exclusions = $form_state->getValue('exclusions');
+    $config->set('drupal', $form_state->getValue('drupal'));
+    $config->set('azure', $form_state->getValue('azure'));
+    $config->set('include', $form_state->getValue('include'));
+    $exclude = $form_state->getValue('exclude');
     // Extract user ids.
-    $exclusions['users'] = array_column($exclusions['users'] ?? [], 'target_id');
-    $config->set('exclusions', $exclusions);
+    $exclude['users'] = array_column($exclude['users'] ?? [], 'target_id');
+    $config->set('exclude', $exclude);
     $config->save();
 
     return parent::submitForm($form, $form_state);
