@@ -129,7 +129,7 @@ class SettingsForm extends ConfigFormBase {
       ];
     }
 
-    $defaultsValues = $config->get('general');
+    $defaultValues = $config->get('general');
     $form['general'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Drupal user settings'),
@@ -139,7 +139,7 @@ class SettingsForm extends ConfigFormBase {
     $form['general']['user_cancel_method'] = [
       '#type' => 'radios',
       '#title' => $this->t('When cancelling an account'),
-      '#default_value' => $defaultsValues['user_cancel_method'] ?? NULL,
+      '#default_value' => $defaultValues['user_cancel_method'] ?? NULL,
       '#required' => TRUE,
       '#description' => $this->t('Method used to cancel/delete a Drupal user account.'),
     ] + user_cancel_methods();
@@ -147,12 +147,12 @@ class SettingsForm extends ConfigFormBase {
     $form['general']['user_id_field'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Drupal user id field'),
-      '#default_value' => $defaultsValues['user_id_field'] ?? 'name',
+      '#default_value' => $defaultValues['user_id_field'] ?? 'name',
       '#description' => $this->t('The Drupal user id field used to match with an Azure user id (cf. Azure user id claim).'),
       '#required' => TRUE,
     ];
 
-    $defaultsValues = $config->get('api');
+    $defaultValues = $config->get('api');
     $form['api'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Azure API settings'),
@@ -166,7 +166,7 @@ class SettingsForm extends ConfigFormBase {
     $form['api']['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure client id'),
-      '#default_value' => $defaultsValues['client_id'] ?? NULL,
+      '#default_value' => $defaultValues['client_id'] ?? NULL,
       '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
@@ -174,7 +174,7 @@ class SettingsForm extends ConfigFormBase {
     $form['api']['client_secret'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure client secret'),
-      '#default_value' => $defaultsValues['client_secret'] ?? NULL,
+      '#default_value' => $defaultValues['client_secret'] ?? NULL,
       '#description' => $this->t("The Azure client secret. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['client_secret'] = '…';</code>."),
       '#required' => TRUE,
     ];
@@ -182,7 +182,7 @@ class SettingsForm extends ConfigFormBase {
     $form['api']['group_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure group id'),
-      '#default_value' => $defaultsValues['group_id'] ?? NULL,
+      '#default_value' => $defaultValues['group_id'] ?? NULL,
       '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['group_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
@@ -190,7 +190,7 @@ class SettingsForm extends ConfigFormBase {
     $form['api']['tenant_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure tenant id'),
-      '#default_value' => $defaultsValues['tenant_id'] ?? NULL,
+      '#default_value' => $defaultValues['tenant_id'] ?? NULL,
       '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['tenant_id'] = '…';</code>."),
       '#required' => TRUE,
     ];
@@ -198,12 +198,12 @@ class SettingsForm extends ConfigFormBase {
     $form['api']['user_id_claim'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Azure user id claim'),
-      '#default_value' => $defaultsValues['user_id_claim'] ?? 'userPrincipalName',
+      '#default_value' => $defaultValues['user_id_claim'] ?? 'userPrincipalName',
       '#description' => $this->t('The Azure user id claim matching a Drupal user id (cf. Drupal user id field).'),
       '#required' => TRUE,
     ];
 
-    $defaultsValues = $config->get('modules');
+    $defaultValues = $config->get('modules');
     $form['modules'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Modules'),
@@ -214,17 +214,17 @@ class SettingsForm extends ConfigFormBase {
     $form['modules']['openid_connect'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('OpenId Connect'),
-      '#default_value' => $defaultsValues['openid_connect'] ?? NULL,
+      '#default_value' => $defaultValues['openid_connect'] ?? NULL,
       '#disabled' => !$this->moduleHandler->moduleExists('openid_connect'),
     ];
     $form['modules']['samlauth'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('SAML Authentication'),
-      '#default_value' => $defaultsValues['samlauth'] ?? NULL,
+      '#default_value' => $defaultValues['samlauth'] ?? NULL,
       '#disabled' => !$this->moduleHandler->moduleExists('samlauth'),
     ];
 
-    $defaultsValues = $config->get('exclusions') ?? [];
+    $defaultValues = $config->get('exclusions') ?? [];
     $form['exclusions'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Exclusions'),
@@ -243,7 +243,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Excluded roles'),
       '#type' => 'checkboxes',
       '#options' => $options,
-      '#default_value' => $defaultsValues['roles'] ?: [],
+      '#default_value' => $defaultValues['roles'] ?: [],
       '#description' => $this->t('Select Drupal user roles to exclude.'),
     ];
 
@@ -252,7 +252,7 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'entity_autocomplete',
       '#target_type' => 'user',
       // By default we exclude user 1.
-      '#default_value' => $this->userStorage->loadMultiple($defaultsValues['users'] ?? [1]),
+      '#default_value' => $this->userStorage->loadMultiple($defaultValues['users'] ?? [1]),
       '#tags' => TRUE,
       '#description' => $this->t('Select Drupal users to exclude (Separate by comma).'),
     ];
