@@ -13,7 +13,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\drupal_psr6_cache\Cache\CacheItem;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -93,8 +92,6 @@ class UserManager implements UserManagerInterface {
    *   The config factory.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
-   *   The request stack.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Psr\Log\LoggerInterface $logger
@@ -103,12 +100,11 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(CacheItemPoolInterface $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
+  public function __construct(CacheItemPoolInterface $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
     $this->cacheItemPool = $cacheItemPool;
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
-    $this->requestStack = $requestStack;
     $this->moduleHandler = $moduleHandler;
     $this->logger = $logger;
     $this->validateConfig();
@@ -127,22 +123,26 @@ class UserManager implements UserManagerInterface {
   public function loadManagedUserIds(): array {
     $userIds = &drupal_static(__FUNCTION__);
     if (!isset($userIds)) {
-      $query = $this->userStorage->getQuery();
+      $query = $this->userStorage->getQuery()
+        ->accessCheck(FALSE);
       // Never delete user 0 and 1.
       $query->condition('uid', [0, 1], 'NOT IN');
 
-      $modules = $this->moduleConfig->get('include.modules');
-      if (is_array($modules)) {
-        $modules = array_filter($modules);
-        if (!empty($modules)) {
-          $orCondition = $query->orConditionGroup();
-          foreach ($modules as $module) {
-            $moduleUserIdQuery = $this->getModuleUserIdsQuery($module);
-            if (NULL !== $moduleUserIdQuery) {
-              $orCondition->condition('uid', $moduleUserIdQuery, 'IN');
+      $include = $this->moduleConfig->get('include');
+      if (isset($include['modules'])) {
+        $modules = $include['modules'];
+        if (is_array($modules)) {
+          $modules = array_filter($modules);
+          if (!empty($modules)) {
+            $orCondition = $query->orConditionGroup();
+            foreach ($modules as $module) {
+              $moduleUserIdQuery = $this->getModuleUserIdsQuery($module);
+              if (NULL !== $moduleUserIdQuery) {
+                $orCondition->condition('uid', $moduleUserIdQuery, 'IN');
+              }
             }
+            $query->condition($orCondition);
           }
-          $query->condition($orCondition);
         }
       }
 

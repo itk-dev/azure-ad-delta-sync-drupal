@@ -51,6 +51,14 @@ php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_d
 php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller web/modules/contrib/azure_ad_delta_sync/src
 ```
 
+## Automated tests
+
+Requires a full Drupal installation with the `azure_ad_delta_sync` module in the `web/modules` folder.
+
+```sh
+(cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
+```
+
 ### Coding standards
 
 ```sh
