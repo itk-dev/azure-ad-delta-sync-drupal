@@ -39,7 +39,9 @@ Run `vendor/bin/drush azure_ad_delta_sync:run --help` for details on the command
 
 ## Development
 
-For development you need a full Drupal project.
+For development you need a full Drupal project. See
+[itk-dev/azure-ad-delta-sync-drupal-test](https://github.com/itk-dev/azure-ad-delta-sync-drupal-test)
+for an example.
 
 We use a lazy services, `azure_ad_delta_sync.user_manager`
 (`Drupal\azure_ad_delta_sync\UserManager`) and `azure_ad_delta_sync.controller`
@@ -56,7 +58,7 @@ php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_d
 ## Automated tests
 
 Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
-`web/modules` folder.
+`web/modules/contrib` folder.
 
 ```sh
 (cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
