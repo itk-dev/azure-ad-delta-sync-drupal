@@ -98,10 +98,10 @@ jobs:
           # Install Drupal
           composer --no-interaction create-project drupal/recommended-project --stability=dev drupal
           # Copy our module source code into the Drupal module folder.
-          mkdir -p drupal/web/modules/custom/azure_ad_delta_sync
-          cp -r azure_ad_delta_sync.* composer.json src drupal/web/modules/custom/azure_ad_delta_sync
+          mkdir -p drupal/web/modules/contrib/azure_ad_delta_sync
+          cp -r azure_ad_delta_sync.* composer.json src drupal/web/modules/contrib/azure_ad_delta_sync
           # Add our module as a composer repository.
-          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure_ad_delta_sync path web/modules/custom/azure_ad_delta_sync
+          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure_ad_delta_sync path web/modules/contrib/azure_ad_delta_sync
           # Restore Drupal composer repository.
           composer --no-interaction --working-dir=drupal config repositories.drupal composer https://packages.drupal.org/8
 
@@ -110,4 +110,4 @@ jobs:
 
           # Check code
           composer --no-interaction --working-dir=drupal require --dev drupal/core-dev
-          cd drupal/web/modules/custom/azure_ad_delta_sync && composer --no-interaction install && vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor *.* src
+          cd drupal/web/modules/contrib/azure_ad_delta_sync && composer --no-interaction install && composer code-analysis

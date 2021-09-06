@@ -61,11 +61,44 @@ Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
 
 ### Coding standards
 
+The code follows the [Drupal Coding
+Standards](https://www.drupal.org/docs/develop/standards) (cf. [`phpcs.xml.dist`](phpcs.xml.dist)) and can be checked by running
+
 ```sh
 composer install
 composer coding-standards-check
 ```
 
+Use
+
 ```sh
 composer coding-standards-apply
 ```
+
+to automatically fix some coding standard violations.
+
+### Code analysis
+
+[drupal-check](https://github.com/mglaman/drupal-check) is used to perform
+static analysis of the code. Run
+
+```sh
+composer code-analysis
+```
+
+### GitHub Actions
+
+We use [GitHub Actions](https://github.com/features/actions) to check coding
+standards, perform code analysis and run automated tests whenever a pull request
+is made (cf. [`.github/workflows/pr.yaml`](.github/workflows/pr.yaml)).
+
+Before making a pull request you can run the GitHub Actions locally to check for
+any problems:
+
+[Install `act`](https://github.com/nektos/act#installation) and run
+
+```sh
+act -P ubuntu-latest=shivammathur/node:focal pull_request
+```
+
+(cf. <https://github.com/shivammathur/setup-php#local-testing-setup>).
