@@ -39,6 +39,8 @@ Run `vendor/bin/drush azure_ad_delta_sync:run --help` for details on the command
 
 ## Development
 
+For development you need a full Drupal project.
+
 We use a lazy services, `azure_ad_delta_sync.user_manager`
 (`Drupal\azure_ad_delta_sync\UserManager`) and `azure_ad_delta_sync.controller`
 (`Drupal\azure_ad_delta_sync\Controller`), , which requires generating a prozy
@@ -53,7 +55,8 @@ php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_d
 
 ## Automated tests
 
-Requires a full Drupal installation with the `azure_ad_delta_sync` module in the `web/modules` folder.
+Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
+`web/modules` folder.
 
 ```sh
 (cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
@@ -62,7 +65,8 @@ Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
 ### Coding standards
 
 The code follows the [Drupal Coding
-Standards](https://www.drupal.org/docs/develop/standards) (cf. [`phpcs.xml.dist`](phpcs.xml.dist)) and can be checked by running
+Standards](https://www.drupal.org/docs/develop/standards) (cf.
+[`phpcs.xml.dist`](phpcs.xml.dist)) and can be checked by running
 
 ```sh
 composer install
