@@ -1,0 +1,34 @@
+services:
+  logger.channel.azure_ad_delta_sync:
+    parent: logger.channel_base
+    arguments:
+      - 'azure_ad_delta_sync'
+
+  azure_ad_delta_sync.controller:
+    class: Drupal\azure_ad_delta_sync\Controller
+    lazy: true
+    arguments:
+      - '@azure_ad_delta_sync.http_client'
+      - '@config.factory'
+
+  azure_ad_delta_sync.user_manager:
+    class: Drupal\azure_ad_delta_sync\UserManager
+    lazy: true
+    arguments:
+      - '@drupal_psr6_cache.cache_item_pool'
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@database'
+      - '@module_handler'
+      - '@logger.channel.azure_ad_delta_sync'
+
+  azure_ad_delta_sync.commands:
+    class: Drupal\azure_ad_delta_sync\Commands\Commands
+    arguments:
+      - '@azure_ad_delta_sync.controller'
+      - '@azure_ad_delta_sync.user_manager'
+    tags:
+      - { name: drush.command }
+
+  azure_ad_delta_sync.http_client:
+    class: Symfony\Component\HttpClient\Psr18Client

@@ -1,0 +1,7 @@
+azure_ad_delta_sync.settings:
+  path: '/admin/config/azure_ad_delta_sync'
+  defaults:
+    _form: '\Drupal\azure_ad_delta_sync\Form\SettingsForm'
+    _title: 'Azure AD Delta Sync'
+  requirements:
+    _permission: 'administer site configuration'

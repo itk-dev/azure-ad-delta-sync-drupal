@@ -1,0 +1,46 @@
+{
+    "name": "itk-dev/azure_ad_delta_sync",
+    "description": "Azure AD Delta Sync for Drupal",
+    "license": "MIT",
+    "type": "drupal-module",
+    "authors": [
+        {
+            "name": "Mikkel Ricky",
+            "email": "rimi@aarhus.dk"
+        }
+    ],
+    "require": {
+        "drush/drush": "^9 || ^10",
+        "itk-dev/azure-ad-delta-sync": "^1.0",
+        "itk-dev/drupal_psr6_cache": "^1.0",
+        "symfony/http-client": "^5.3"
+    },
+    "require-dev": {
+        "drupal/coder": "^8.3",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
+        "mglaman/drupal-check": "^1.1"
+    },
+    "scripts": {
+        "code-analysis/drupal-check": [
+            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor --exclude-dir=src/ProxyClass *.* src"
+        ],
+        "code-analysis": [
+            "@code-analysis/drupal-check"
+        ],
+        "coding-standards-check/phpcs": [
+            "vendor/bin/phpcs --standard=phpcs.xml.dist"
+        ],
+        "coding-standards-check": [
+            "@coding-standards-check/phpcs"
+        ],
+        "coding-standards-apply/phpcs": [
+            "vendor/bin/phpcbf --standard=phpcs.xml.dist"
+        ],
+        "coding-standards-apply": [
+            "@coding-standards-apply/phpcs"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
