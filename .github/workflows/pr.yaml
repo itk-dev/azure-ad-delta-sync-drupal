@@ -111,3 +111,44 @@ jobs:
           # Check code
           composer --no-interaction --working-dir=drupal require --dev drupal/core-dev
           cd drupal/web/modules/contrib/azure_ad_delta_sync && composer --no-interaction install && composer code-analysis
+
+  # Naming?!
+  php-test:
+    name: PHP - Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: [ '7.4', '8.0' ]
+    steps:
+      - uses: actions/checkout@master
+      - name: Run tests
+        run: |
+          # https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
+          docker run -d --publish 8888:80 --env WEB_DOCUMENT_ROOT=/app/web --name drupal_test webdevops/php-nginx:${{ matrix.php-versions }}-alpine
+
+          # Create a new Drupal project
+          docker exec drupal_test composer --no-interaction create-project drupal/recommended-project --stability=dev app
+          # Install Drush
+          docker exec drupal_test composer --working-dir=/app require drush/drush
+          # Require test dependencies
+          docker exec drupal_test composer --working-dir=/app require --dev phpspec/prophecy-phpunit --with-all-dependencies
+
+          # Copy our code into the Drupal module folder
+          docker exec drupal_test mkdir -p /app/web/modules/contrib/azure_ad_delta_sync
+          for source in *; do
+            docker cp $source drupal_test:/app/web/modules/contrib/azure_ad_delta_sync
+          done
+
+          # Add our module as a composer repository.
+          docker exec drupal_test composer --working-dir=/app config repositories.itk-dev/azure_ad_delta_sync path web/modules/contrib/azure_ad_delta_sync
+          # Require our module.
+          docker exec drupal_test composer --working-dir=/app require 'itk-dev/azure_ad_delta_sync:*'
+
+          # Copy our phpunit configuration into the Drupal folder.
+          docker cp .github/resources/phpunit.xml drupal_test:/app/web
+          # Install Drupal
+          docker exec drupal_test /app/vendor/bin/drush site:install minimal --db-url=sqlite://localhost//tmp/db.sqlite
+          # Enable our module
+          docker exec drupal_test /app/vendor/bin/drush --yes pm:enable azure_ad_delta_sync
+          # Run our module tests
+          docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional'
