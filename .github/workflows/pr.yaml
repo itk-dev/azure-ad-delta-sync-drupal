@@ -1,15 +1,32 @@
 on: pull_request
 name: PR Review
 jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    name: Changelog should be updated
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Git fetch
+        run: git fetch
+
+      - name: Check that changelog has been updated.
+        run: git diff --exit-code origin/${{ github.base_ref }} -- CHANGELOG.md && exit 1 || exit 0
+
   test-composer-files:
     name: Validate composer
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.2' ]
         dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
@@ -38,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.2' ]
         dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
       - uses: actions/checkout@master
@@ -71,10 +88,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.2' ]
         dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
@@ -96,29 +113,28 @@ jobs:
         run: |
           # We need a Drupal project to run drupal-check (cf. https://github.com/mglaman/drupal-check#usage)
           # Install Drupal
-          composer --no-interaction create-project drupal/recommended-project --stability=dev drupal
+          composer --no-interaction create-project drupal/recommended-project:10.2.x-dev --stability=dev drupal
           # Copy our module source code into the Drupal module folder.
-          mkdir -p drupal/web/modules/contrib/azure_ad_delta_sync
-          cp -r azure_ad_delta_sync.* composer.json src drupal/web/modules/contrib/azure_ad_delta_sync
+          mkdir -p drupal/web/modules/contrib/azure-ad-delta-sync-drupal
+          cp -r azure_ad_delta_sync.* composer.json src drupal/web/modules/contrib/azure-ad-delta-sync-drupal
           # Add our module as a composer repository.
-          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure_ad_delta_sync path web/modules/contrib/azure_ad_delta_sync
+          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure-ad-delta-sync-drupal path web/modules/contrib/azure-ad-delta-sync-drupal
           # Restore Drupal composer repository.
           composer --no-interaction --working-dir=drupal config repositories.drupal composer https://packages.drupal.org/8
 
           # Require our module.
-          composer --no-interaction --working-dir=drupal require 'itk-dev/azure_ad_delta_sync:*'
+          composer --no-interaction --working-dir=drupal require 'itk-dev/azure-ad-delta-sync-drupal:*'
 
           # Check code
-          composer --no-interaction --working-dir=drupal require --dev drupal/core-dev
-          cd drupal/web/modules/contrib/azure_ad_delta_sync && composer --no-interaction install && composer code-analysis
+          composer --no-interaction --working-dir=drupal require --dev drupal/core-dev:10.2.x-dev
+          cd drupal/web/modules/contrib/azure-ad-delta-sync-drupal && composer --no-interaction install && composer code-analysis
 
-  # Naming?!
-  php-test:
-    name: PHP - Test
+  unit_tests:
+    name: PHP - Unit test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.2' ]
     steps:
       - uses: actions/checkout@master
       - name: Run tests
@@ -127,22 +143,22 @@ jobs:
           docker run -d --publish 8888:80 --env WEB_DOCUMENT_ROOT=/app/web --name drupal_test webdevops/php-nginx:${{ matrix.php-versions }}-alpine
 
           # Create a new Drupal project
-          docker exec drupal_test composer --no-interaction create-project drupal/recommended-project --stability=dev app
+          docker exec drupal_test composer --no-interaction create-project drupal/recommended-project:10.2.x-dev --stability=dev app
           # Install Drush
           docker exec drupal_test composer --working-dir=/app require drush/drush
           # Require test dependencies
           docker exec drupal_test composer --working-dir=/app require --dev phpspec/prophecy-phpunit --with-all-dependencies
 
           # Copy our code into the Drupal module folder
-          docker exec drupal_test mkdir -p /app/web/modules/contrib/azure_ad_delta_sync
+          docker exec drupal_test mkdir -p /app/web/modules/contrib/azure-ad-delta-sync-drupal
           for source in *; do
-            docker cp $source drupal_test:/app/web/modules/contrib/azure_ad_delta_sync
+            docker cp $source drupal_test:/app/web/modules/contrib/azure-ad-delta-sync-drupal
           done
 
           # Add our module as a composer repository.
-          docker exec drupal_test composer --working-dir=/app config repositories.itk-dev/azure_ad_delta_sync path web/modules/contrib/azure_ad_delta_sync
+          docker exec drupal_test composer --working-dir=/app config repositories.itk-dev/azure-ad-delta-sync-drupal path web/modules/contrib/azure-ad-delta-sync-drupal
           # Require our module.
-          docker exec drupal_test composer --working-dir=/app require 'itk-dev/azure_ad_delta_sync:*'
+          docker exec drupal_test composer --working-dir=/app require 'itk-dev/azure-ad-delta-sync-drupal:*'
 
           # Copy our phpunit configuration into the Drupal folder.
           docker cp .github/resources/phpunit.xml drupal_test:/app/web
@@ -151,4 +167,4 @@ jobs:
           # Enable our module
           docker exec drupal_test /app/vendor/bin/drush --yes pm:enable azure_ad_delta_sync
           # Run our module tests
-          docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional'
+          docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure-ad-delta-sync-drupal/tests/src/Functional'

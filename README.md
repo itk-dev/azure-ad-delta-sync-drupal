@@ -16,10 +16,10 @@ You will probably want to add Azure api keys in `settings.local.php`, i.e.
 ```php
 # settings.local.php
 
+$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';
 $config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';
 $config['azure_ad_delta_sync.settings']['azure']['client_secret'] = '…';
 $config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';
-$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';
 ```
 
 Furthermore, you may want to install the [Config
@@ -43,25 +43,25 @@ For development you need a full Drupal project. See
 [itk-dev/azure-ad-delta-sync-drupal-test](https://github.com/itk-dev/azure-ad-delta-sync-drupal-test)
 for an example.
 
-We use a lazy services, `azure_ad_delta_sync.user_manager`
+We use lazy services, `azure_ad_delta_sync.user_manager`
 (`Drupal\azure_ad_delta_sync\UserManager`) and `azure_ad_delta_sync.controller`
-(`Drupal\azure_ad_delta_sync\Controller`), , which requires generating a prozy
-class (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
+(`Drupal\azure_ad_delta_sync\Controller`), which require generating proxy
+classes (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
 
 Run the following commands to update the proxy classes:
 
 ```sh
-php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync/src
-php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller web/modules/contrib/azure_ad_delta_sync/src
+php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync_drupal/src
+php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' web/modules/contrib/azure_ad_delta_sync_drupal/src
 ```
 
 ## Automated tests
 
-Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
+Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module in the
 `web/modules/contrib` folder.
 
 ```sh
-(cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
+(cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
 ```
 
 ### Coding standards

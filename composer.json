@@ -1,5 +1,5 @@
 {
-    "name": "itk-dev/azure_ad_delta_sync",
+    "name": "itk-dev/azure-ad-delta-sync-drupal",
     "description": "Azure AD Delta Sync for Drupal",
     "license": "MIT",
     "type": "drupal-module",
@@ -10,19 +10,19 @@
         }
     ],
     "require": {
-        "drush/drush": "^9 || ^10",
-        "itk-dev/azure-ad-delta-sync": "^1.0",
+        "drush/drush": "^11.6 || ^12",
+        "itk-dev/azure-ad-delta-sync": "dev-feature/415-upgrade-php as 2.0.0",
         "itk-dev/drupal_psr6_cache": "^1.0",
-        "symfony/http-client": "^5.3"
+        "symfony/http-client": "^5.4 || ^6.4"
     },
     "require-dev": {
-        "drupal/coder": "^8.3",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
-        "mglaman/drupal-check": "^1.1"
+        "drupal/coder": "^8.3",
+        "mglaman/drupal-check": "^1.4"
     },
     "scripts": {
         "code-analysis/drupal-check": [
-            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor --exclude-dir=src/ProxyClass *.* src"
+            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor,*/ProxyClass/* *.* src"
         ],
         "code-analysis": [
             "@code-analysis/drupal-check"
@@ -41,6 +41,9 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

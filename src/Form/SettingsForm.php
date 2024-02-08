@@ -70,7 +70,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): SettingsForm {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
@@ -88,8 +88,11 @@ class SettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $form
+   * @phpstan-return array<mixed, mixed>
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Form constructor.
     $form = parent::buildForm($form, $form_state);
     // Default settings.
@@ -265,8 +268,10 @@ class SettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $form
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config = $this->config(self::SETTINGS);
     $config->set('drupal', $form_state->getValue('drupal'));
     $config->set('azure', $form_state->getValue('azure'));
@@ -277,13 +282,15 @@ class SettingsForm extends ConfigFormBase {
     $config->set('exclude', $exclude);
     $config->save();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-return array<mixed, mixed>
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return [
       self::SETTINGS,
     ];

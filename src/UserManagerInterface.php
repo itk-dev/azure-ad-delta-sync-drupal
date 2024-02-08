@@ -14,8 +14,10 @@ interface UserManagerInterface extends HandlerInterface {
    *
    * @param array $options
    *   The options.
+   *
+   * @phpstan-param array<mixed, mixed> $options
    */
-  public function setOptions(array $options);
+  public function setOptions(array $options): void;
 
   /**
    * Load managed user ids.
