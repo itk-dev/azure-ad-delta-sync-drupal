@@ -4,8 +4,8 @@ namespace Drupal\azure_ad_delta_sync;
 
 use Drupal\azure_ad_delta_sync\Form\SettingsForm;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Psr\Http\Client\ClientInterface;
 use ItkDev\AzureAdDeltaSync\Controller as BaseController;
+use Psr\Http\Client\ClientInterface;
 
 /**
  * The controller implementation.

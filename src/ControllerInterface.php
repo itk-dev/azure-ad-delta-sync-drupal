@@ -19,6 +19,6 @@ interface ControllerInterface {
    * @throws \ItkDev\AzureAdDeltaSync\Exception\DataException
    * @throws \ItkDev\AzureAdDeltaSync\Exception\NetworkException
    */
-  public function run(HandlerInterface $handler);
+  public function run(HandlerInterface $handler): void;
 
 }

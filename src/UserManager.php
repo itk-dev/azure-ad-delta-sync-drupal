@@ -11,8 +11,9 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\drupal_psr6_cache\Cache\CacheItem;
-use Psr\Cache\CacheItemPoolInterface;
+use Drupal\drupal_psr6_cache\Cache\CacheItemPool;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -21,8 +22,6 @@ use Symfony\Component\Routing\Route;
 class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
 
-  private const MODULE = 'azure_ad_delta_sync';
-  private const MARKER = 'delete';
   private const CACHE_KEY_USER_IDS = 'azure_ad_delta_sync_user_ids';
 
   /**
@@ -54,13 +53,6 @@ class UserManager implements UserManagerInterface {
   private $database;
 
   /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  private $requestStack;
-
-  /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -78,13 +70,15 @@ class UserManager implements UserManagerInterface {
    * The options.
    *
    * @var array
+   *
+   * @phpstan-var array<mixed, mixed>
    */
-  private $options;
+  private array $options;
 
   /**
    * UserManager constructor.
    *
-   * @param \Psr\Cache\CacheItemPoolInterface $cacheItemPool
+   * @param \Drupal\drupal_psr6_cache\Cache\CacheItemPool $cacheItemPool
    *   The user data.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
@@ -92,6 +86,8 @@ class UserManager implements UserManagerInterface {
    *   The config factory.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Psr\Log\LoggerInterface $logger
@@ -100,7 +96,7 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(CacheItemPoolInterface $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
+  public function __construct(CacheItemPool $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
     $this->cacheItemPool = $cacheItemPool;
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
@@ -113,12 +109,14 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOptions(array $options) {
+  public function setOptions(array $options): void {
     $this->options = $options;
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-return array<mixed, mixed>
    */
   public function loadManagedUserIds(): array {
     $userIds = &drupal_static(__FUNCTION__);
@@ -182,6 +180,8 @@ class UserManager implements UserManagerInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $users
    */
   public function removeUsersFromDeletionList(array $users): void {
     $userIdClaim = $this->moduleConfig->get('azure.user_id_claim');
@@ -294,14 +294,18 @@ class UserManager implements UserManagerInterface {
 
   /**
    * Set user ids.
+   *
+   * @phpstan-param array<mixed, mixed> $userIds
    */
-  private function cacheUserIdsForDeletion(array $userIds) {
+  private function cacheUserIdsForDeletion(array $userIds): void {
     $item = new CacheItem(self::CACHE_KEY_USER_IDS, $userIds, TRUE);
     $this->cacheItemPool->save($item);
   }
 
   /**
    * Get user ids.
+   *
+   * @phpstan-return NULL|array<mixed, mixed>
    */
   private function getCachedUserIdsForDeletion(): ?array {
     $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
@@ -312,7 +316,7 @@ class UserManager implements UserManagerInterface {
   /**
    * Validate config.
    */
-  private function validateConfig() {
+  private function validateConfig(): void {
     $required = [
       'azure.user_id_claim',
       'drupal.user_id_field',

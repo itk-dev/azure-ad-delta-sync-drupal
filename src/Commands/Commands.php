@@ -13,20 +13,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Commands extends DrushCommands {
   /**
-   * The config.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  private $moduleConfig;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  private $eventDispatcher;
-
-  /**
    * The controller.
    *
    * @var \Drupal\azure_ad_delta_sync\ControllerInterface
@@ -57,8 +43,10 @@ class Commands extends DrushCommands {
    * @option force
    *   Delete inactive users.
    * @usage azure_ad_delta_sync:run
+   *
+   * @phpstan-param array<mixed, mixed> $options
    */
-  public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]) {
+  public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]): void {
     $dryRun = $options['dry-run'];
     $force = $options['force'];
     $this->userManager->setOptions([
