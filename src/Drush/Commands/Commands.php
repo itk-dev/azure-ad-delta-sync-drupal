@@ -2,8 +2,8 @@
 
 namespace Drupal\azure_ad_delta_sync\Drush\Commands;
 
-use CLI\Option;
-use CLI\Command;
+use Drush\Attributes\Option;
+use Drush\Attributes\Command;
 use Drupal\azure_ad_delta_sync\ControllerInterface;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drush\Commands\DrushCommands;
