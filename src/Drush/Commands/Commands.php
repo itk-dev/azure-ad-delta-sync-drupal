@@ -1,12 +1,14 @@
 <?php
 
-namespace Drupal\azure_ad_delta_sync\Commands;
+namespace Drupal\azure_ad_delta_sync\Drush\Commands;
 
 use Drupal\azure_ad_delta_sync\ControllerInterface;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Output\OutputInterface;
+use Drush\Attributes as CLI;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Drush commands.
@@ -35,24 +37,39 @@ class Commands extends DrushCommands {
   }
 
   /**
-   * The run command.
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('azure_ad_delta_sync.controller'),
+      $container->get('azure_ad_delta_sync.user_manager'),
+    );
+  }
+
+
+  /**
+   * Run.
    *
    * @command azure_ad_delta_sync:run
-   * @option dry-run
-   *   Don't do anything, but show what will be done.
-   * @option force
-   *   Delete inactive users.
    * @usage azure_ad_delta_sync:run
-   *
-   * @phpstan-param array<mixed, mixed> $options
+   *   Remove inactive users.
    */
-  public function run(array $options = ['dry-run' => FALSE, 'force' => FALSE]): void {
+  #[CLI\Command(name: 'azure_ad_delta_sync:run')]
+  #[CLI\Option(name: 'dry-run', description: "Don't do anything, but show what will be done.")]
+  #[CLI\Option(name: 'force', description: 'Delete inactive users.')]
+  public function run(
+    array $options = [
+      'dry-run' => NULL,
+      'force' => NULL,
+    ],
+  ): void {
     $dryRun = $options['dry-run'];
     $force = $options['force'];
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
       'debug' => $this->output->isDebug(),
     ]);
+
     if ($dryRun) {
       $this->output->setVerbosity($this->output()->getVerbosity() | OutputInterface::VERBOSITY_VERBOSE);
     }
