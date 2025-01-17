@@ -168,3 +168,12 @@ jobs:
           docker exec drupal_test /app/vendor/bin/drush --yes pm:enable azure_ad_delta_sync
           # Run our module tests
           docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure-ad-delta-sync-drupal/tests/src/Functional'
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Markdown lint
+        run: docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint --ignore vendor '**/*.md'

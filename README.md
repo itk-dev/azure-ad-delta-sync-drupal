@@ -83,6 +83,14 @@ composer coding-standards-apply
 
 to automatically fix some coding standard violations.
 
+#### Markdown files
+
+```shell
+docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**/*.md'
+```shell
+docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**/*.md' --fix
+```
+
 ### Code analysis
 
 [drupal-check](https://github.com/mglaman/drupal-check) is used to perform
