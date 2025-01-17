@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "drush/drush": "^12 || 13^",
+        "drush/drush": "^12 || ^13",
         "itk-dev/azure-ad-delta-sync": "dev-feature/415-upgrade-php as 2.0.0",
         "itk-dev/drupal_psr6_cache": "^1.0",
         "symfony/http-client": "^6.4 || 7.2"
