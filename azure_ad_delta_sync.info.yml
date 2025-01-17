@@ -3,7 +3,7 @@ description: Azure AD Delta Sync
 package: azure_ad_delta_sync
 
 type: module
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^10 || ^11
 
 dependencies:
   - drupal:drupal_psr6_cache
