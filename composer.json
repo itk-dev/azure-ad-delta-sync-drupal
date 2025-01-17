@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "drush/drush": "^9 || ^10",
+        "drush/drush": "13",
         "itk-dev/azure-ad-delta-sync": "^1.0",
         "itk-dev/drupal_psr6_cache": "^1.0",
         "symfony/http-client": "^5.3"
@@ -41,6 +41,9 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }
