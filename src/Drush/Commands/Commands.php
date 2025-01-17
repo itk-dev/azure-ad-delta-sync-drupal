@@ -2,38 +2,27 @@
 
 namespace Drupal\azure_ad_delta_sync\Drush\Commands;
 
+use CLI\Option;
+use CLI\Command;
 use Drupal\azure_ad_delta_sync\ControllerInterface;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Output\OutputInterface;
-use Drush\Attributes as CLI;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Drush commands.
  */
 class Commands extends DrushCommands {
-  /**
-   * The controller.
-   *
-   * @var \Drupal\azure_ad_delta_sync\ControllerInterface
-   */
-  private $controller;
-
-  /**
-   * The user manager.
-   *
-   * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
-   */
-  private $userManager;
 
   /**
    * Commands constructor.
    */
-  public function __construct(ControllerInterface $controller, UserManagerInterface $userManager) {
-    $this->controller = $controller;
-    $this->userManager = $userManager;
+  public function __construct(
+    private readonly ControllerInterface $controller,
+    private readonly UserManagerInterface $userManager,
+  ) {
   }
 
   /**
@@ -46,7 +35,6 @@ class Commands extends DrushCommands {
     );
   }
 
-
   /**
    * Run.
    *
@@ -54,9 +42,9 @@ class Commands extends DrushCommands {
    * @usage azure_ad_delta_sync:run
    *   Remove inactive users.
    */
-  #[CLI\Command(name: 'azure_ad_delta_sync:run')]
-  #[CLI\Option(name: 'dry-run', description: "Don't do anything, but show what will be done.")]
-  #[CLI\Option(name: 'force', description: 'Delete inactive users.')]
+  #[Command(name: 'azure_ad_delta_sync:run')]
+  #[Option(name: 'dry-run', description: "Don't do anything, but show what will be done.")]
+  #[Option(name: 'force', description: 'Delete inactive users.')]
   public function run(
     array $options = [
       'dry-run' => NULL,
