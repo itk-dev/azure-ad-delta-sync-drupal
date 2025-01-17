@@ -6,10 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
-        dependency-version: [ prefer-lowest, prefer-stable ]
+        php-versions: [ '8.3' ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
@@ -38,10 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.4' ]
         dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
@@ -71,10 +70,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.4' ]
         dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
@@ -118,9 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '7.4', '8.0' ]
+        php-versions: [ '8.4' ]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
       - name: Run tests
         run: |
           # https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
