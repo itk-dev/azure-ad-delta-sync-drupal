@@ -18,10 +18,9 @@ class Controller extends BaseController implements ControllerInterface {
   public function __construct(ClientInterface $client, ConfigFactoryInterface $configFactory) {
     $moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $options = [
-      'client_id' => $moduleConfig->get('azure.client_id'),
+      'security_key' => $moduleConfig->get('azure.security_key'),
       'client_secret' => $moduleConfig->get('azure.client_secret'),
-      'group_id' => $moduleConfig->get('azure.group_id'),
-      'tenant_id' => $moduleConfig->get('azure.tenant_id'),
+      'uri' => $moduleConfig->get('azure.uri'),
     ];
     parent::__construct($client, $options);
   }
