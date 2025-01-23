@@ -166,11 +166,11 @@ class SettingsForm extends ConfigFormBase {
       '#markup' => $this->t('<p>Settings for connection to the Azure API to get users. Your IdP provider can provide the actual values needed and, for security reasons, these should be set in <code>settings.local.php</code>.</p>'),
     ];
 
-    $form['azure']['client_id'] = [
+    $form['azure']['security_key'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Azure client id'),
-      '#default_value' => $defaultValues['client_id'] ?? NULL,
-      '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';</code>."),
+      '#title' => $this->t('Azure security key'),
+      '#default_value' => $defaultValues['security_key'] ?? NULL,
+      '#description' => $this->t("The Azure security key. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['security_key'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
@@ -182,19 +182,11 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['azure']['group_id'] = [
+    $form['azure']['uri'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Azure group id'),
-      '#default_value' => $defaultValues['group_id'] ?? NULL,
-      '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';</code>."),
-      '#required' => TRUE,
-    ];
-
-    $form['azure']['tenant_id'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Azure tenant id'),
-      '#default_value' => $defaultValues['tenant_id'] ?? NULL,
-      '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';</code>."),
+      '#title' => $this->t('Azure uri'),
+      '#default_value' => $defaultValues['uri'] ?? NULL,
+      '#description' => $this->t("The Azure uri. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['uri'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
@@ -227,7 +219,7 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Modules'),
       '#options' => $options,
       '#default_value' => $defaultValues['modules'] ?? [],
-      '#description' => $this->t('Manged only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
+      '#description' => $this->t('Manage only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
     ];
 
     $defaultValues = $config->get('exclude') ?? [];
