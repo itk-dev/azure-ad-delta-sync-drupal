@@ -5,7 +5,6 @@ namespace Drupal\azure_ad_delta_sync\Form;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -31,13 +30,6 @@ class SettingsForm extends ConfigFormBase {
   private $roleStorage;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  private $moduleHandler;
-
-  /**
    * The user manager.
    *
    * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
@@ -51,19 +43,16 @@ class SettingsForm extends ConfigFormBase {
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
    * @param \Drupal\azure_ad_delta_sync\UserManagerInterface $userManager
    *   The user manager.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler, UserManagerInterface $userManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
-    $this->moduleHandler = $moduleHandler;
     $this->userManager = $userManager;
   }
 
@@ -74,7 +63,6 @@ class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('module_handler'),
       $container->get('azure_ad_delta_sync.user_manager')
     );
   }
@@ -205,21 +193,14 @@ class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    $options = array_filter(
-      [
-        'openid_connect' => $this->t('OpenId Connect'),
-        'samlauth' => $this->t('SAML Authentication'),
-      ],
-      [$this->moduleHandler, 'moduleExists'],
-      ARRAY_FILTER_USE_KEY
-    );
+    $options =  ['openid_connect.generic' => $this->t('OpenId Connect')];
 
-    $form['include']['modules'] = [
+    $form['include']['providers'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Modules'),
+      '#title' => $this->t('providers'),
       '#options' => $options,
-      '#default_value' => $defaultValues['modules'] ?? [],
-      '#description' => $this->t('Manage only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
+      '#default_value' => $defaultValues['providers'] ?? [],
+      '#description' => $this->t('Manage only Drupal users authenticated by one of the selected providers. If no providers are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
     ];
 
     $defaultValues = $config->get('exclude') ?? [];
