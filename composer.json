@@ -13,20 +13,24 @@
         "drush/drush": "^12 || ^13",
         "itk-dev/azure-ad-delta-sync": "dev-feature/415-upgrade-php as 2.0.0",
         "itk-dev/drupal_psr6_cache": "^1.0",
+        "mglaman/phpstan-drupal": "^1.3",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-deprecation-rules": "^1.2",
         "symfony/http-client": "^6.4 || 7.2"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
         "drupal/coder": "^8.3",
-        "mglaman/drupal-check": "^1.4"
+        "mglaman/drupal-check": "^1.4",
+        "phpstan/phpstan": "^1.12"
     },
     "scripts": {
-        "code-analysis/drupal-check": [
-            "vendor/bin/drupal-check --deprecations --analysis --exclude-dir=vendor,*/ProxyClass/* *.* src"
-        ],
-        "code-analysis": [
-            "@code-analysis/drupal-check"
-        ],
+        "code-analysis/phpstan": [
+            "phpstan analyse --configuration=phpstan.neon"
+          ],
+          "code-analysis": [
+            "@code-analysis/phpstan"
+          ],
         "coding-standards-check/phpcs": [
             "vendor/bin/phpcs --standard=phpcs.xml.dist"
         ],
@@ -43,7 +47,8 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
         }
     }
 }

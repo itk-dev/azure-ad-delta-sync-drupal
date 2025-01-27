@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Drush commands.
  */
-class Commands extends DrushCommands {
+final class Commands extends DrushCommands {
 
   /**
    * Commands constructor.
