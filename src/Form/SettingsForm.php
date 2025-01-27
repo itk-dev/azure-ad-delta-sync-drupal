@@ -193,7 +193,7 @@ final class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    $options =  ['openid_connect.generic' => $this->t('OpenId Connect')];
+    $options = ['openid_connect.generic' => $this->t('OpenId Connect')];
 
     $form['include']['providers'] = [
       '#type' => 'checkboxes',
