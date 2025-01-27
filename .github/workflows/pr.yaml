@@ -110,7 +110,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
       - name: Code analysis
         run: |
-          ./code-analysis
+          ./scripts/code-analysis
 
   unit_tests:
     name: PHP - Unit test

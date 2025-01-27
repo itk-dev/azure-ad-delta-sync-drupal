@@ -97,7 +97,7 @@ docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**
 static analysis of the code. Run
 
 ```sh
-code-analysis
+./scripts/code-analysis
 ```
 
 ### GitHub Actions
