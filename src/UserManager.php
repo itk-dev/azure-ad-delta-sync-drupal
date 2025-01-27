@@ -220,8 +220,8 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function commitDeletionList(): void {
-    // user_cancel_block: Account will be blocked and will no longer be able to log in. All of the content will remain
-    // attributed to the username.
+    // user_cancel_block: Account will be blocked and will no longer be able to log in.
+    // All of the content will remain attributed to the username.
     $method = $this->moduleConfig->get('drupal')['user_cancel_method'] ?? 'user_cancel_block';
     $deletedUserIds = [];
     $userIds = $this->getCachedUserIdsForDeletion();
