@@ -108,9 +108,12 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+      - name: Install Dependencies
+        run: |
+          composer install --no-interaction --no-progress
       - name: Code analysis
         run: |
-          ./scripts/code-analysis
+           ./scripts/code-analysis
 
   unit_tests:
     name: PHP - Unit test
