@@ -127,23 +127,22 @@ class UserManager implements UserManagerInterface {
       $query->condition('uid', [0, 1], 'NOT IN');
 
       $include = $this->moduleConfig->get('include');
-      if (isset($include['modules'])) {
-        $modules = $include['modules'];
-        if (is_array($modules)) {
-          $modules = array_filter($modules);
-          if (!empty($modules)) {
+      if (isset($include['providers'])) {
+        $providers = $include['providers'];
+        if (is_array($providers)) {
+          $providers = array_filter($providers);
+          if (!empty($providers)) {
             $orCondition = $query->orConditionGroup();
-            foreach ($modules as $module) {
-              $moduleUserIdQuery = $this->getModuleUserIdsQuery($module);
-              if (NULL !== $moduleUserIdQuery) {
-                $orCondition->condition('uid', $moduleUserIdQuery, 'IN');
+            foreach ($providers as $provider) {
+              $providerUserIdQuery = $this->getProviderUserIdsQuery($provider);
+              if (NULL !== $providerUserIdQuery) {
+                $orCondition->condition('uid', $providerUserIdQuery, 'IN');
               }
             }
             $query->condition($orCondition);
           }
         }
       }
-
       $exclude = $this->moduleConfig->get('exclude');
       if (isset($exclude['roles'])) {
         $roles = array_filter($exclude['roles']);
@@ -170,12 +169,14 @@ class UserManager implements UserManagerInterface {
    */
   public function collectUsersForDeletionList(): void {
     $userIds = $this->loadManagedUserIds();
-    $this->cacheUserIdsForDeletion($userIds);
-    $this->logger->info($this->formatPlural(
-      count($userIds),
-      '1 user marked for deletion.',
-      '@count users marked for deletion.'
-    ));
+    if (0 !== count($userIds)) {
+      $this->cacheUserIdsForDeletion($userIds);
+      $this->logger->info($this->formatPlural(
+        count($userIds),
+        '1 user marked for deletion.',
+        '@count users marked for deletion.'
+      ));
+    }
   }
 
   /**
@@ -224,20 +225,23 @@ class UserManager implements UserManagerInterface {
     $method = $this->moduleConfig->get('drupal')['user_cancel_method'] ?? 'user_cancel_block';
     $deletedUserIds = [];
     $userIds = $this->getCachedUserIdsForDeletion();
+
     foreach ($userIds as $userId) {
       user_cancel([], $userId, $method);
       $deletedUserIds[] = $userId;
     }
 
-    $this->logger->info($this->formatPlural(
-      count($deletedUserIds),
-      'One user to be deleted',
-      '@count users to be deleted'
-    ));
-    if ($this->options['debug'] ?? FALSE) {
-      $users = $this->userStorage->loadMultiple($deletedUserIds);
-      foreach ($users as $user) {
-        $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+    if (0 !== count($deletedUserIds)) {
+      $this->logger->info($this->formatPlural(
+        count($deletedUserIds),
+        'One user to be deleted',
+        '@count users to be deleted'
+      ));
+      if ($this->options['debug'] ?? FALSE) {
+        $users = $this->userStorage->loadMultiple($deletedUserIds);
+        foreach ($users as $user) {
+          $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+        }
       }
     }
 
@@ -263,34 +267,24 @@ class UserManager implements UserManagerInterface {
   }
 
   /**
-   * Get module user ids select query.
+   * Get provider user ids select query.
    *
-   * @param string $module
-   *   The module.
+   * @param string $provider
+   *   The provider.
    *
    * @return null|\Drupal\Core\Database\Query\SelectInterface
    *   The select query.
    */
-  private function getModuleUserIdsQuery(string $module): ?SelectInterface {
-    if (!$this->moduleHandler->moduleExists($module)) {
-      return NULL;
-    }
-    switch ($module) {
-      case 'openid_connect':
-        return $this->database
-          ->select('users_data')
-          ->fields('users_data', ['uid'])
-          ->condition('users_data.module', 'openid_connect')
-          ->condition('users_data.name', 'oidc_name');
-
-      case 'samlauth':
+  private function getProviderUserIdsQuery(string $provider): ?SelectInterface {
+    switch ($provider) {
+      case 'openid_connect.generic':
         return $this->database
           ->select('authmap')
           ->fields('authmap', ['uid'])
-          ->condition('authmap.provider', 'samlauth');
+          ->condition('authmap.provider', $provider);
 
       default:
-        throw new \RuntimeException(sprintf('Unknown module: %s', $module));
+        throw new \RuntimeException(sprintf('Unknown provider: %s', $provider));
     }
   }
 
