@@ -84,19 +84,18 @@ jobs:
           composer coding-standards-check/phpcs
 
   php-code-analysis:
-    name: PHP - Code analysis
+    name: PHP code analysis
     runs-on: ubuntu-latest
     strategy:
       matrix:
         php-versions: [ '8.3' ]
-        dependency-version: [ prefer-lowest, prefer-stable ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@master
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: json, gd
+          extensions: json
           coverage: none
           tools: composer:v2
       # https://github.com/shivammathur/setup-php#cache-composer-dependencies
@@ -109,25 +108,9 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
-      - name: drupal-check
+      - name: Code analysis
         run: |
-          # We need a Drupal project to run drupal-check (cf. https://github.com/mglaman/drupal-check#usage)
-          # Install Drupal
-          composer --no-interaction create-project drupal/recommended-project:10.2.x-dev --stability=dev drupal
-          # Copy our module source code into the Drupal module folder.
-          mkdir -p drupal/web/modules/contrib/azure-ad-delta-sync-drupal
-          cp -r azure_ad_delta_sync.* composer.json src drupal/web/modules/contrib/azure-ad-delta-sync-drupal
-          # Add our module as a composer repository.
-          composer --no-interaction --working-dir=drupal config repositories.itk-dev/azure-ad-delta-sync-drupal path web/modules/contrib/azure-ad-delta-sync-drupal
-          # Restore Drupal composer repository.
-          composer --no-interaction --working-dir=drupal config repositories.drupal composer https://packages.drupal.org/8
-
-          # Require our module.
-          composer --no-interaction --working-dir=drupal require 'itk-dev/azure-ad-delta-sync-drupal:*'
-
-          # Check code
-          composer --no-interaction --working-dir=drupal require --dev drupal/core-dev:10.2.x-dev
-          cd drupal/web/modules/contrib/azure-ad-delta-sync-drupal && composer --no-interaction install && composer code-analysis
+          ./code-analysis
 
   unit_tests:
     name: PHP - Unit test
