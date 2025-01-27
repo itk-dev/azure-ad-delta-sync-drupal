@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Upgrade Drupal version
+* Add changelog check to pr.yaml
+* Change code analysis
+* Update php version
+* Update Drush
+* Rewrite drush delta sync command a bit, because Drush was updated
 
 ## [1.0.0] 09-06-2021
 
