@@ -20,6 +20,8 @@ use Symfony\Component\Routing\Route;
 class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
 
+  private $userIds; 
+
   /**
    * The user storage.
    *
@@ -181,7 +183,7 @@ class UserManager implements UserManagerInterface {
       'Retaining @count users.'
     ));
     if (is_array($this->userIds)) {
-      $this->userIdsToKeep = array_map(
+      $userIdsToKeep = array_map(
         static function (array $user) use ($userIdClaim) {
           if (!isset($user[$userIdClaim])) {
             throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
@@ -193,7 +195,7 @@ class UserManager implements UserManagerInterface {
 
       $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
 
-      $users = $this->userStorage->loadByProperties([$userIdField => $this->userIdsToKeep]);
+      $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
       foreach ($users as $user) {
         $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
         unset($this->userIds[$user->id()]);

@@ -91,11 +91,10 @@ docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**
 
 ### Code analysis
 
-[drupal-check](https://github.com/mglaman/drupal-check) is used to perform
-static analysis of the code. Run
+phpstan is used to perform static analysis of the code. Run the following script:
 
 ```sh
-docker exec --interactive --tty --rm --volume ${PWD}:/app itkdev/php8.3-fpm:latest  ./scripts/code-analysis
+docker compose build && docker compose run --rm php scripts/code-analysis
 ```
 
 ### GitHub Actions
@@ -114,9 +113,3 @@ act -P ubuntu-latest=shivammathur/node:focal pull_request
 ```
 
 (cf. <https://github.com/shivammathur/setup-php#local-testing-setup>).
-
-
-
-### NOTES TODO
-
-docker compose build && docker run --interactive --tty --rm --volume ${PWD}:/app itkdev/php8.3-fpm:latest ./scripts/generate-proxy-class 
