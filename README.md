@@ -50,8 +50,8 @@ classes (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
 Run the following commands to update the proxy classes:
 
 ```sh
-php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync_drupal/src
-php «DRUPAL_ROOT»/web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' web/modules/contrib/azure_ad_delta_sync_drupal/src
+docker compose exec phpfpm php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync_drupal/src
+docker compose exec phpfpm php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' web/modules/contrib/azure_ad_delta_sync_drupal/src
 ```
 
 ## Automated tests
@@ -60,7 +60,7 @@ Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module
 `web/modules/contrib` folder.
 
 ```sh
-(cd «DRUPAL_ROOT»/web; ../vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
+(cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
 ```
 
 ### Coding standards
@@ -95,7 +95,7 @@ docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**
 static analysis of the code. Run
 
 ```sh
-./scripts/code-analysis
+docker exec --interactive --tty --rm --volume ${PWD}:/app itkdev/php8.3-fpm:latest  ./scripts/code-analysis
 ```
 
 ### GitHub Actions
@@ -114,3 +114,9 @@ act -P ubuntu-latest=shivammathur/node:focal pull_request
 ```
 
 (cf. <https://github.com/shivammathur/setup-php#local-testing-setup>).
+
+
+
+### NOTES TODO
+
+docker compose build && docker run --interactive --tty --rm --volume ${PWD}:/app itkdev/php8.3-fpm:latest ./scripts/generate-proxy-class 
