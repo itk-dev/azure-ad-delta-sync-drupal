@@ -1,7 +1,7 @@
 parameters:
   paths:
     - .
-  level: 0
+  level: 5
   customRulesetUsed: true
   reportUnmatchedIgnoredErrors: false
   excludePaths:

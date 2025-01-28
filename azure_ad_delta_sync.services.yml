@@ -19,7 +19,6 @@ services:
       - '@config.factory'
       - '@database'
       - '@request_stack'
-      - '@module_handler'
       - '@logger.channel.azure_ad_delta_sync'
 
   azure_ad_delta_sync.commands:

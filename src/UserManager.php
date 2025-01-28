@@ -7,7 +7,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Psr\Log\LoggerInterface;
@@ -20,6 +19,13 @@ use Symfony\Component\Routing\Route;
 class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
 
+  /**
+   * The userIds.
+   *
+   * @var array
+   *
+   * @phpstan-var array<mixed, mixed>
+   */
   private $userIds; 
 
   /**
@@ -42,13 +48,6 @@ class UserManager implements UserManagerInterface {
    * @var \Drupal\Core\Database\Connection
    */
   private $database;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  private $moduleHandler;
 
   /**
    * The logger.
@@ -77,19 +76,16 @@ class UserManager implements UserManagerInterface {
    *   The database connection.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The request stack.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
+  public function __construct(EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger) {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
-    $this->moduleHandler = $moduleHandler;
     $this->logger = $logger;
     $this->userIds = array();
     $this->validateConfig();
@@ -258,10 +254,10 @@ class UserManager implements UserManagerInterface {
    * @param string $provider
    *   The provider.
    *
-   * @return null|\Drupal\Core\Database\Query\SelectInterface
+   * @return \Drupal\Core\Database\Query\SelectInterface
    *   The select query.
    */
-  private function getProviderUserIdsQuery(string $provider): ?SelectInterface {
+  private function getProviderUserIdsQuery(string $provider): SelectInterface {
     switch ($provider) {
       case 'openid_connect.generic':
         return $this->database
