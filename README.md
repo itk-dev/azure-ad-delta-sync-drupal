@@ -86,9 +86,8 @@ to automatically fix some coding standard violations.
 #### Markdown files
 
 ```shell
-docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**/*.md'
-```shell
 docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**/*.md' --fix
+docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**/*.md'
 ```
 
 ### Code analysis
