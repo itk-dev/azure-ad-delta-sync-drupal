@@ -163,3 +163,12 @@ jobs:
 
       - name: Markdown lint
         run: docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint --ignore vendor '**/*.md'
+
+  check-proxy-classes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./scripts/generate-proxy-classes
+      - name: Check nothing has changed
+        run: git diff --exit-code
