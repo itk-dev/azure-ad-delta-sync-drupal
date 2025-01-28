@@ -10,8 +10,6 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\drupal_psr6_cache\Cache\CacheItem;
-use Drupal\drupal_psr6_cache\Cache\CacheItemPool;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
@@ -21,15 +19,6 @@ use Symfony\Component\Routing\Route;
  */
 class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
-
-  private const CACHE_KEY_USER_IDS = 'azure_ad_delta_sync_user_ids';
-
-  /**
-   * The user data.
-   *
-   * @var \Psr\Cache\CacheItemPoolInterface
-   */
-  private $cacheItemPool;
 
   /**
    * The user storage.
@@ -78,8 +67,6 @@ class UserManager implements UserManagerInterface {
   /**
    * UserManager constructor.
    *
-   * @param \Drupal\drupal_psr6_cache\Cache\CacheItemPool $cacheItemPool
-   *   The user data.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -96,13 +83,13 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(CacheItemPool $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
-    $this->cacheItemPool = $cacheItemPool;
+  public function __construct(EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
     $this->moduleHandler = $moduleHandler;
     $this->logger = $logger;
+    $this->userIds = array();
     $this->validateConfig();
   }
 
@@ -119,8 +106,8 @@ class UserManager implements UserManagerInterface {
    * @phpstan-return array<mixed, mixed>
    */
   public function loadManagedUserIds(): array {
-    $userIds = &drupal_static(__FUNCTION__);
-    if (!isset($userIds)) {
+    $managedUserIds = &drupal_static(__FUNCTION__);
+    if (!isset($managedUserIds)) {
       $query = $this->userStorage->getQuery()
         ->accessCheck(FALSE);
       // Never delete user 0 and 1.
@@ -158,21 +145,21 @@ class UserManager implements UserManagerInterface {
         }
       }
 
-      $userIds = $query->execute();
+      $managedUserIds = $query->execute();
     }
 
-    return $userIds;
+    return $managedUserIds;
   }
 
   /**
    * {@inheritdoc}
    */
   public function collectUsersForDeletionList(): void {
-    $userIds = $this->loadManagedUserIds();
-    if (0 !== count($userIds)) {
-      $this->cacheUserIdsForDeletion($userIds);
+    $managedUserIds = $this->loadManagedUserIds();
+    if (0 !== count($managedUserIds)) {
+      $this->userIds = $managedUserIds;
       $this->logger->info($this->formatPlural(
-        count($userIds),
+        count($this->userIds),
         '1 user marked for deletion.',
         '@count users marked for deletion.'
       ));
@@ -193,9 +180,8 @@ class UserManager implements UserManagerInterface {
       'Retaining one user.',
       'Retaining @count users.'
     ));
-    $cachedUserIdsForDeletion = $this->getCachedUserIdsForDeletion();
-    if (is_array($cachedUserIdsForDeletion)) {
-      $userIdsToKeep = array_map(
+    if (is_array($this->userIds)) {
+      $this->userIdsToKeep = array_map(
         static function (array $user) use ($userIdClaim) {
           if (!isset($user[$userIdClaim])) {
             throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
@@ -207,12 +193,11 @@ class UserManager implements UserManagerInterface {
 
       $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
 
-      $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
+      $users = $this->userStorage->loadByProperties([$userIdField => $this->userIdsToKeep]);
       foreach ($users as $user) {
         $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
-        unset($cachedUserIdsForDeletion[$user->id()]);
+        unset($this->userIds[$user->id()]);
       }
-      $this->cacheUserIdsForDeletion($cachedUserIdsForDeletion);
     }
   }
 
@@ -224,9 +209,8 @@ class UserManager implements UserManagerInterface {
     // to log in. All of the content will remain attributed to the username.
     $method = $this->moduleConfig->get('drupal')['user_cancel_method'] ?? 'user_cancel_block';
     $deletedUserIds = [];
-    $userIds = $this->getCachedUserIdsForDeletion();
 
-    foreach ($userIds as $userId) {
+    foreach ($this->userIds as $userId) {
       user_cancel([], $userId, $method);
       $deletedUserIds[] = $userId;
     }
@@ -286,27 +270,6 @@ class UserManager implements UserManagerInterface {
       default:
         throw new \RuntimeException(sprintf('Unknown provider: %s', $provider));
     }
-  }
-
-  /**
-   * Set user ids.
-   *
-   * @phpstan-param array<mixed, mixed> $userIds
-   */
-  private function cacheUserIdsForDeletion(array $userIds): void {
-    $item = new CacheItem(self::CACHE_KEY_USER_IDS, $userIds, TRUE);
-    $this->cacheItemPool->save($item);
-  }
-
-  /**
-   * Get user ids.
-   *
-   * @phpstan-return NULL|array<mixed, mixed>
-   */
-  private function getCachedUserIdsForDeletion(): ?array {
-    $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
-
-    return $item->isHit() ? $item->get() : NULL;
   }
 
   /**

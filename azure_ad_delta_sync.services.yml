@@ -15,7 +15,6 @@ services:
     class: Drupal\azure_ad_delta_sync\UserManager
     lazy: true
     arguments:
-      - '@drupal_psr6_cache.cache_item_pool'
       - '@entity_type.manager'
       - '@config.factory'
       - '@database'

@@ -5,7 +5,4 @@ package: azure_ad_delta_sync
 type: module
 core_version_requirement: ^10 || ^11
 
-dependencies:
-  - drupal:drupal_psr6_cache
-
 configure: azure_ad_delta_sync.settings
