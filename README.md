@@ -16,10 +16,9 @@ You will probably want to add Azure api keys in `settings.local.php`, i.e.
 ```php
 # settings.local.php
 
-$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';
-$config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['uri'] = '…';
+$config['azure_ad_delta_sync.settings']['azure']['security_key'] = '…';
 $config['azure_ad_delta_sync.settings']['azure']['client_secret'] = '…';
-$config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';
 ```
 
 Furthermore, you may want to install the [Config
