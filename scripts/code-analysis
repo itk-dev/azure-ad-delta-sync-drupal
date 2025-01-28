@@ -28,6 +28,8 @@ drupal_composer config --no-plugins allow-plugins true
 
 drupal_composer require wikimedia/composer-merge-plugin
 drupal_composer config extra.merge-plugin.include "$module_path/composer.json"
+# https://www.drupal.org/project/drupal/issues/3220043#comment-14845434
+drupal_composer require --dev symfony/phpunit-bridge
 
 # Run PHPStan
 (cd "$drupal_dir" && vendor/bin/phpstan --configuration="$module_path/phpstan.neon" --memory-limit=256M)
