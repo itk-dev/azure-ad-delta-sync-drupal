@@ -26,7 +26,7 @@ class UserManager implements UserManagerInterface {
    *
    * @phpstan-var array<mixed, mixed>
    */
-  private $userIds; 
+  private $userIds;
 
   /**
    * The user storage.
@@ -95,7 +95,7 @@ class UserManager implements UserManagerInterface {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
     $this->logger = $logger;
-    $this->userIds = array();
+    $this->userIds = [];
     $this->validateConfig();
   }
 
@@ -107,13 +107,11 @@ class UserManager implements UserManagerInterface {
   }
 
   /**
-   * Get active OIDC providers.
-   *
-   * @phpstan-return array<mixed, mixed>
+   * {@inheritdoc}
    */
   public function getActiveOIDCProviders(): array {
     // Stolen from here: https://git.drupalcode.org/project/openid_connect/-/blob/3.x/src/Form/OpenIDConnectLoginForm.php?ref_type=heads#L78
-    // Todo, maybe do this in a more elegant way
+    // @todo maybe do this in a more elegant way.
     $clients = $this->oidcStorage->loadByProperties(['status' => TRUE]);
     $providerIds = [];
     $openIdConnectPrefix = 'openid_connect';
@@ -284,10 +282,10 @@ class UserManager implements UserManagerInterface {
    *   The select query.
    */
   private function getProviderUserIdsQuery(string $provider): SelectInterface {
-        return $this->database
-          ->select('authmap')
-          ->fields('authmap', ['uid'])
-          ->condition('authmap.provider', $provider); 
+    return $this->database
+      ->select('authmap')
+      ->fields('authmap', ['uid'])
+      ->condition('authmap.provider', $provider);
   }
 
   /**
@@ -305,12 +303,11 @@ class UserManager implements UserManagerInterface {
     }
   }
 
-
   /**
    * Unescape provider id.
    */
   private function unscapeProviderId(string $input) {
-    return str_replace("__dot__" , ".", $input);
+    return str_replace("__dot__", ".", $input);
   }
 
 }
