@@ -27,4 +27,11 @@ interface UserManagerInterface extends HandlerInterface {
    */
   public function loadManagedUserIds(): array;
 
+  /**
+   * Get active OIDC providers.
+   *
+   * @phpstan-return array<mixed, mixed>
+   */
+  public function getActiveOIDCProviders(): array;
+
 }

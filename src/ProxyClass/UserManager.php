@@ -78,6 +78,14 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
+        public function getActiveOIDCProviders(): array
+        {
+            return $this->lazyLoadItself()->getActiveOIDCProviders();
+        }
+
+        /**
+         * {@inheritdoc}
+         */
         public function loadManagedUserIds(): array
         {
             return $this->lazyLoadItself()->loadManagedUserIds();

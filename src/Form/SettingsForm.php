@@ -75,6 +75,13 @@ final class SettingsForm extends ConfigFormBase {
   }
 
   /**
+   * Escape provider id.
+   */
+  private function escapeProviderId(string $input) {
+    return str_replace("." , "__dot__", $input);
+  }
+
+  /**
    * {@inheritdoc}
    *
    * @phpstan-param array<mixed, mixed> $form
@@ -193,7 +200,13 @@ final class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    $options = ['openid_connect.generic' => $this->t('OpenId Connect')];
+    $options = [];
+    $providers = $this->userManager->getActiveOIDCProviders();
+
+    foreach ($providers as $provider => $value) {
+     // Drupal config cannot contain ".", why I have a different notation for key and value
+     $options[$this->escapeProviderId($provider)] = $value;
+    }
 
     $form['include']['providers'] = [
       '#type' => 'checkboxes',

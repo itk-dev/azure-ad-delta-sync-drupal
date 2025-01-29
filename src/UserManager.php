@@ -36,6 +36,13 @@ class UserManager implements UserManagerInterface {
   private $userStorage;
 
   /**
+   * The oidc storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  private $oidcStorage;
+
+  /**
    * The module config.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
@@ -84,6 +91,7 @@ class UserManager implements UserManagerInterface {
    */
   public function __construct(EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger) {
     $this->userStorage = $entityTypeManager->getStorage('user');
+    $this->oidcStorage = $entityTypeManager->getStorage('openid_connect_client');
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
     $this->logger = $logger;
@@ -96,6 +104,22 @@ class UserManager implements UserManagerInterface {
    */
   public function setOptions(array $options): void {
     $this->options = $options;
+  }
+
+  /**
+   * Get active OIDC providers.
+   *
+   * @phpstan-return array<mixed, mixed>
+   */
+  public function getActiveOIDCProviders(): array {
+    $clients = $this->oidcStorage->loadByProperties(['status' => TRUE]);
+    $providerIds = [];
+    $openIdConnectPrefix = 'openid_connect';
+    foreach ($clients as $client_id => $client) {
+      $providerIds[$openIdConnectPrefix . "." . $client_id] = $client->label();
+    }
+
+    return $providerIds;
   }
 
   /**
@@ -119,7 +143,7 @@ class UserManager implements UserManagerInterface {
           if (!empty($providers)) {
             $orCondition = $query->orConditionGroup();
             foreach ($providers as $provider) {
-              $providerUserIdQuery = $this->getProviderUserIdsQuery($provider);
+              $providerUserIdQuery = $this->getProviderUserIdsQuery($this->unscapeProviderId($provider));
               if (NULL !== $providerUserIdQuery) {
                 $orCondition->condition('uid', $providerUserIdQuery, 'IN');
               }
@@ -258,16 +282,10 @@ class UserManager implements UserManagerInterface {
    *   The select query.
    */
   private function getProviderUserIdsQuery(string $provider): SelectInterface {
-    switch ($provider) {
-      case 'openid_connect.generic':
         return $this->database
           ->select('authmap')
           ->fields('authmap', ['uid'])
-          ->condition('authmap.provider', $provider);
-
-      default:
-        throw new \RuntimeException(sprintf('Unknown provider: %s', $provider));
-    }
+          ->condition('authmap.provider', $provider); 
   }
 
   /**
@@ -283,6 +301,14 @@ class UserManager implements UserManagerInterface {
         throw new \InvalidArgumentException(sprintf('Invalid or missing configuration in %s: %s', static::class, $name));
       }
     }
+  }
+
+
+  /**
+   * Unescape provider id.
+   */
+  private function unscapeProviderId(string $input) {
+    return str_replace("__dot__" , ".", $input);
   }
 
 }
