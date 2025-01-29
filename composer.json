@@ -11,7 +11,7 @@
     ],
     "require": {
         "drush/drush": "^12 || ^13",
-        "itk-dev/azure-ad-delta-sync": "dev-feature/415-upgrade-php as 2.0.0",
+        "itk-dev/azure-ad-delta-sync": "^1.1",
         "itk-dev/drupal_psr6_cache": "^1.0",
         "mglaman/phpstan-drupal": "^1.3",
         "phpstan/extension-installer": "^1.4",
