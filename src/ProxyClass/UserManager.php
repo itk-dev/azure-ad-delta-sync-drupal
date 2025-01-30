@@ -78,9 +78,9 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
-        public function getActiveOIDCProviders(): array
+        public function getActiveOpenIdConnectProviders(): array
         {
-            return $this->lazyLoadItself()->getActiveOIDCProviders();
+            return $this->lazyLoadItself()->getActiveOpenIdConnectProviders();
         }
 
         /**

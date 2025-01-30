@@ -201,7 +201,7 @@ final class SettingsForm extends ConfigFormBase {
     ];
 
     $options = [];
-    $providers = $this->userManager->getActiveOIDCProviders();
+    $providers = $this->userManager->getActiveOpenIdConnectProviders();
 
     foreach ($providers as $provider => $value) {
       // Drupal config cannot contain ".", why I have a different notation for

@@ -109,7 +109,7 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getActiveOIDCProviders(): array {
+  public function getActiveOpenIdConnectProviders(): array {
     // Stolen from here: https://git.drupalcode.org/project/openid_connect/-/blob/3.x/src/Form/OpenIDConnectLoginForm.php?ref_type=heads#L78
     // @todo maybe do this in a more elegant way.
     $clients = $this->oidcStorage->loadByProperties(['status' => TRUE]);

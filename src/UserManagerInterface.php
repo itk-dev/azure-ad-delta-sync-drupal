@@ -32,6 +32,6 @@ interface UserManagerInterface extends HandlerInterface {
    *
    * @phpstan-return array<mixed, mixed>
    */
-  public function getActiveOIDCProviders(): array;
+  public function getActiveOpenIdConnectProviders(): array;
 
 }
