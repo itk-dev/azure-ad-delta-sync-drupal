@@ -9,17 +9,22 @@ services:
     lazy: true
     arguments:
       - '@azure_ad_delta_sync.http_client'
-      - '@config.factory'
+      - '@azure_ad_delta_sync.config_helper'
 
   azure_ad_delta_sync.user_manager:
     class: Drupal\azure_ad_delta_sync\UserManager
     lazy: true
     arguments:
       - '@entity_type.manager'
-      - '@config.factory'
       - '@database'
       - '@request_stack'
       - '@logger.channel.azure_ad_delta_sync'
+      - '@azure_ad_delta_sync.config_helper'
+
+  azure_ad_delta_sync.config_helper:
+    class: Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+    arguments:
+      - '@config.factory'
 
   azure_ad_delta_sync.commands:
     class: Drupal\azure_ad_delta_sync\Commands\Commands

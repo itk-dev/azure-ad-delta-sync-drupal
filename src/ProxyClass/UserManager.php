@@ -78,14 +78,6 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
-        public function getActiveOpenIdConnectProviders(): array
-        {
-            return $this->lazyLoadItself()->getActiveOpenIdConnectProviders();
-        }
-
-        /**
-         * {@inheritdoc}
-         */
         public function loadManagedUserIds(): array
         {
             return $this->lazyLoadItself()->loadManagedUserIds();

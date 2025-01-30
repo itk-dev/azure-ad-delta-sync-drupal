@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 
 /**
  * Settings form.
@@ -37,6 +38,13 @@ final class SettingsForm extends ConfigFormBase {
   private $userManager;
 
   /**
+   * The config helper.
+   *
+   * @var \ Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+   */
+  private $configHelper;
+
+  /**
    * SettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -54,6 +62,7 @@ final class SettingsForm extends ConfigFormBase {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
     $this->userManager = $userManager;
+    $this->configHelper = $configHelper;
   }
 
   /**
@@ -72,13 +81,6 @@ final class SettingsForm extends ConfigFormBase {
    */
   public function getFormId() {
     return 'azure_ad_delta_sync_config';
-  }
-
-  /**
-   * Escape provider id.
-   */
-  private function escapeProviderId(string $input) {
-    return str_replace(".", "__dot__", $input);
   }
 
   /**
@@ -200,14 +202,7 @@ final class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    $options = [];
-    $providers = $this->userManager->getActiveOpenIdConnectProviders();
-
-    foreach ($providers as $provider => $value) {
-      // Drupal config cannot contain ".", why I have a different notation for
-      // key and value.
-      $options[$this->escapeProviderId($provider)] = $value;
-    }
+    $options = $this->configHelper->getAllUserProviders();
 
     $form['include']['providers'] = [
       '#type' => 'checkboxes',

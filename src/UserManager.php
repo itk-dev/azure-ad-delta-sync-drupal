@@ -2,8 +2,6 @@
 
 namespace Drupal\azure_ad_delta_sync;
 
-use Drupal\azure_ad_delta_sync\Form\SettingsForm;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityTypeManager;
@@ -12,6 +10,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 
 /**
  * User manager.
@@ -22,11 +21,11 @@ class UserManager implements UserManagerInterface {
   /**
    * The userIds.
    *
-   * @var array
+   * @var array|int[]
    *
    * @phpstan-var array<mixed, mixed>
    */
-  private $userIds;
+  private array $userIds;
 
   /**
    * The user storage.
@@ -36,18 +35,18 @@ class UserManager implements UserManagerInterface {
   private $userStorage;
 
   /**
+   * The config helper.
+   *
+   * @var \ Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+   */
+  private $configHelper;
+
+  /**
    * The oidc storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   private $oidcStorage;
-
-  /**
-   * The module config.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  private $moduleConfig;
 
   /**
    * The database connection.
@@ -77,8 +76,6 @@ class UserManager implements UserManagerInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
@@ -89,12 +86,12 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger) {
+  public function __construct(EntityTypeManager $entityTypeManager, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger, ConfigHelper $configHelper) {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->oidcStorage = $entityTypeManager->getStorage('openid_connect_client');
-    $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
     $this->logger = $logger;
+    $this->configHelper = $configHelper;
     $this->userIds = [];
     $this->validateConfig();
   }
@@ -104,22 +101,6 @@ class UserManager implements UserManagerInterface {
    */
   public function setOptions(array $options): void {
     $this->options = $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getActiveOpenIdConnectProviders(): array {
-    // Stolen from here: https://git.drupalcode.org/project/openid_connect/-/blob/3.x/src/Form/OpenIDConnectLoginForm.php?ref_type=heads#L78
-    // @todo maybe do this in a more elegant way.
-    $clients = $this->oidcStorage->loadByProperties(['status' => TRUE]);
-    $providerIds = [];
-    $openIdConnectPrefix = 'openid_connect';
-    foreach ($clients as $client_id => $client) {
-      $providerIds[$openIdConnectPrefix . "." . $client_id] = $client->label();
-    }
-
-    return $providerIds;
   }
 
   /**
@@ -135,36 +116,25 @@ class UserManager implements UserManagerInterface {
       // Never delete user 0 and 1.
       $query->condition('uid', [0, 1], 'NOT IN');
 
-      $include = $this->moduleConfig->get('include');
-      if (isset($include['providers'])) {
-        $providers = $include['providers'];
-        if (is_array($providers)) {
-          $providers = array_filter($providers);
-          if (!empty($providers)) {
-            $orCondition = $query->orConditionGroup();
-            foreach ($providers as $provider) {
-              $providerUserIdQuery = $this->getProviderUserIdsQuery($this->unscapeProviderId($provider));
-              if (NULL !== $providerUserIdQuery) {
-                $orCondition->condition('uid', $providerUserIdQuery, 'IN');
-              }
-            }
-            $query->condition($orCondition);
+      $providers = $this->configHelper->getProviders();
+      if (!empty($providers)) {
+        $orCondition = $query->orConditionGroup();
+        foreach ($providers as $provider) {
+          $providerUserIdQuery = $this->getProviderUserIdsQuery($provider);
+          if (NULL !== $providerUserIdQuery) {
+            $orCondition->condition('uid', $providerUserIdQuery, 'IN');
           }
         }
+        $query->condition($orCondition);
       }
-      $exclude = $this->moduleConfig->get('exclude');
-      if (isset($exclude['roles'])) {
-        $roles = array_filter($exclude['roles']);
-        if (!empty($roles)) {
-          $query->condition('roles', $roles, 'NOT IN');
-        }
+      $roles = $this->configHelper->getRoles();
+      if (!empty($roles)) {
+        $query->condition('roles', $roles, 'NOT IN');
       }
 
-      if (isset($exclude['users'])) {
-        $users = $exclude['users'];
-        if (!empty($users)) {
-          $query->condition('uid', $users, 'NOT IN');
-        }
+      $users = $this->configHelper->getUsers();
+      if (!empty($users)) {
+        $query->condition('uid', $users, 'NOT IN');
       }
 
       $managedUserIds = $query->execute();
@@ -178,14 +148,12 @@ class UserManager implements UserManagerInterface {
    */
   public function collectUsersForDeletionList(): void {
     $managedUserIds = $this->loadManagedUserIds();
-    if (0 !== count($managedUserIds)) {
-      $this->userIds = $managedUserIds;
-      $this->logger->info($this->formatPlural(
-        count($this->userIds),
-        '1 user marked for deletion.',
-        '@count users marked for deletion.'
-      ));
-    }
+    $this->userIds = $managedUserIds;
+    $this->logger->info($this->formatPlural(
+      count($this->userIds),
+      '1 user marked for deletion.',
+      '@count users marked for deletion.'
+    ));
   }
 
   /**
@@ -194,16 +162,15 @@ class UserManager implements UserManagerInterface {
    * @phpstan-param array<mixed, mixed> $users
    */
   public function removeUsersFromDeletionList(array $users): void {
-    $userIdClaim = $this->moduleConfig->get('azure.user_id_claim');
-    $userIdField = $this->moduleConfig->get('drupal.user_id_field');
+    $userIdClaim = $this->configHelper->getConfiguration('azure.user_id_claim');
+    $userIdField = $this->configHelper->getConfiguration('drupal.user_id_field');
 
     $this->logger->info($this->formatPlural(
       count($users),
       'Retaining one user.',
       'Retaining @count users.'
     ));
-    if (is_array($this->userIds)) {
-      $userIdsToKeep = array_map(
+    $userIdsToKeep = array_map(
         static function (array $user) use ($userIdClaim) {
           if (!isset($user[$userIdClaim])) {
             throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
@@ -213,13 +180,12 @@ class UserManager implements UserManagerInterface {
         $users
       );
 
-      $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
+    $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
 
-      $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
-      foreach ($users as $user) {
-        $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
-        unset($this->userIds[$user->id()]);
-      }
+    $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
+    foreach ($users as $user) {
+      $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
+      unset($this->userIds[$user->id()]);
     }
   }
 
@@ -227,13 +193,11 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function commitDeletionList(): void {
-    // user_cancel_block: Account will be blocked and will no longer be able
-    // to log in. All of the content will remain attributed to the username.
-    $method = $this->moduleConfig->get('drupal')['user_cancel_method'] ?? 'user_cancel_block';
+    $cancelMethod = $this->configHelper->getUserCancelMethod();
     $deletedUserIds = [];
 
     foreach ($this->userIds as $userId) {
-      user_cancel([], $userId, $method);
+      user_cancel([], $userId, $cancelMethod);
       $deletedUserIds[] = $userId;
     }
 
@@ -282,10 +246,11 @@ class UserManager implements UserManagerInterface {
    *   The select query.
    */
   private function getProviderUserIdsQuery(string $provider): SelectInterface {
+    $unescapeProvider = $this->configHelper->unescapeProviderId($provider);
     return $this->database
       ->select('authmap')
       ->fields('authmap', ['uid'])
-      ->condition('authmap.provider', $provider);
+      ->condition('authmap.provider', $unscapeProvider);
   }
 
   /**
@@ -297,17 +262,10 @@ class UserManager implements UserManagerInterface {
       'drupal.user_id_field',
     ];
     foreach ($required as $name) {
-      if (empty($this->moduleConfig->get($name))) {
+      if (empty($this->configHelper->getConfiguration($name))) {
         throw new \InvalidArgumentException(sprintf('Invalid or missing configuration in %s: %s', static::class, $name));
       }
     }
-  }
-
-  /**
-   * Unescape provider id.
-   */
-  private function unscapeProviderId(string $input) {
-    return str_replace("__dot__", ".", $input);
   }
 
 }

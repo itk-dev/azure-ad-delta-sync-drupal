@@ -55,11 +55,11 @@ Run the following command to update the proxy classes:
 
 ## Automated tests
 
-Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
+Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module in the
 `web/modules/contrib` folder.
 
 ```sh
-(cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
+(cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
 ```
 
 ### Coding standards
@@ -93,7 +93,7 @@ docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**
 phpstan is used to perform static analysis of the code. Run the following script:
 
 ```sh
-docker compose build && docker compose run --rm php scripts/code-analysis
+docker compose run --rm php scripts/code-analysis
 ```
 
 ### GitHub Actions
