@@ -53,6 +53,11 @@ final class Commands extends DrushCommands {
   ): void {
     $dryRun = $options['dry-run'];
     $force = $options['force'];
+
+    if (!$dryRun && !$force) {
+      throw new CommandFailedException('Please specify either --dry-run or --force option.');
+    }
+
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
       'debug' => $this->output->isDebug(),
@@ -60,10 +65,6 @@ final class Commands extends DrushCommands {
 
     if ($dryRun) {
       $this->output->setVerbosity($this->output()->getVerbosity() | OutputInterface::VERBOSITY_VERBOSE);
-    }
-
-    if (!$dryRun && !$force) {
-      throw new CommandFailedException('Please specify either --dry-run or --force option.');
     }
 
     $this->controller->run($this->userManager);
