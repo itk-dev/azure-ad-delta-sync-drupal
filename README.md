@@ -47,11 +47,10 @@ We use lazy services, `azure_ad_delta_sync.user_manager`
 (`Drupal\azure_ad_delta_sync\Controller`), which require generating proxy
 classes (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
 
-Run the following commands to update the proxy classes:
+Run the following command to update the proxy classes:
 
 ```sh
-docker compose exec phpfpm php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' web/modules/contrib/azure_ad_delta_sync_drupal/src
-docker compose exec phpfpm php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' web/modules/contrib/azure_ad_delta_sync_drupal/src
+./scripts/generate-proxy-classes
 ```
 
 ## Automated tests
