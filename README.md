@@ -60,7 +60,7 @@ Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
 `web/modules/contrib` folder.
 
 ```sh
-(cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
+(cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync/tests/src/Functional)
 ```
 
 ### Coding standards
