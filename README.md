@@ -56,7 +56,7 @@ docker compose exec phpfpm php web/core/scripts/generate-proxy-class.php 'Drupal
 
 ## Automated tests
 
-Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module in the
+Requires a full Drupal installation with the `azure_ad_delta_sync` module in the
 `web/modules/contrib` folder.
 
 ```sh
