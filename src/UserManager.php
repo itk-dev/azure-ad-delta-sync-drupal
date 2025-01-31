@@ -213,7 +213,6 @@ class UserManager implements UserManagerInterface {
       foreach ($users as $user) {
         $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
       }
-      }
     }
 
     if (!($this->options['dry-run'] ?? FALSE)) {
