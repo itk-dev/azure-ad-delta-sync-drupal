@@ -56,7 +56,7 @@ class ConfigHelper {
         $unescapedProviders[$unescapedKey] = $value;
       }
       return $unescapedProviders;
-   
+
     }
     return FALSE;
   }
@@ -83,7 +83,7 @@ class ConfigHelper {
   }
 
   /**
-   * get users.
+   * Get users.
    */
   public function getUsers() {
     $exclude = $this->getConfiguration('exclude');
@@ -94,14 +94,14 @@ class ConfigHelper {
   }
 
   /**
-   * Set configuration
+   * Set configuration.
    */
   public function setConfiguration(array $config, string $configName): void {
     $config[$configName] = $config;
   }
 
   /**
-   * Get configuration
+   * Get configuration.
    */
   public function getConfiguration(string $configName): array|string {
     return $this->moduleConfig->get($configName);
@@ -122,7 +122,7 @@ class ConfigHelper {
       $providerId = 'openid_connect.' . $client_id;
       $providerIds[$providerId] = $client->label();
     }
-    
+
     return $providerIds;
   }
 
@@ -136,8 +136,9 @@ class ConfigHelper {
   /**
    * Unescape provider id.
    */
-  private function unescapeProviderId(string $input) {
-    return str_replace("__dot__", ".", $input);
-  }
+  // Todo talk to Mikkel about this
+  // private function unescapeProviderId(string $input) {
+  //   return str_replace("__dot__", ".", $input);
+  // }
 
 }
