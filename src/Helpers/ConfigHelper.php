@@ -119,7 +119,7 @@ class ConfigHelper {
     $providerIds = [];
     $openIdConnectPrefix = 'openid_connect.';
     foreach ($clients as $client_id => $client) {
-      $providerId = 'openid_connect.' . $client_id;
+      $providerId = $openIdConnectPrefix . $client_id;
       $providerIds[$providerId] = $client->label();
     }
 
