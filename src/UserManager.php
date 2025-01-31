@@ -203,17 +203,16 @@ class UserManager implements UserManagerInterface {
       $deletedUserIds[] = $userId;
     }
 
-    if (0 !== count($deletedUserIds)) {
-      $this->logger->info($this->formatPlural(
-        count($deletedUserIds),
-        'One user to be deleted',
-        '@count users to be deleted'
-      ));
-      if ($this->options['debug'] ?? FALSE) {
-        $users = $this->userStorage->loadMultiple($deletedUserIds);
-        foreach ($users as $user) {
-          $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
-        }
+    $this->logger->info($this->formatPlural(
+      count($deletedUserIds),
+      'One user to be deleted',
+      '@count users to be deleted'
+    ));
+    if ($this->options['debug'] ?? FALSE) {
+      $users = $this->userStorage->loadMultiple($deletedUserIds);
+      foreach ($users as $user) {
+        $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+      }
       }
     }
 
