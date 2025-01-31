@@ -57,7 +57,7 @@ final class SettingsForm extends ConfigFormBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager, ConfigHelper $configHelper) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
@@ -72,7 +72,8 @@ final class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('azure_ad_delta_sync.user_manager')
+      $container->get('azure_ad_delta_sync.user_manager'),
+      $container->get('azure_ad_delta_sync.config_helper')
     );
   }
 

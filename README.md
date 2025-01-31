@@ -93,7 +93,7 @@ docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint '**
 phpstan is used to perform static analysis of the code. Run the following script:
 
 ```sh
-docker compose run --rm php scripts/code-analysis
+./scripts/code-analysis
 ```
 
 ### GitHub Actions

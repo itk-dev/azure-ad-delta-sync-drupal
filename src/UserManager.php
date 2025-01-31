@@ -246,11 +246,10 @@ class UserManager implements UserManagerInterface {
    *   The select query.
    */
   private function getProviderUserIdsQuery(string $provider): SelectInterface {
-    $unescapeProvider = $this->configHelper->unescapeProviderId($provider);
     return $this->database
       ->select('authmap')
       ->fields('authmap', ['uid'])
-      ->condition('authmap.provider', $unscapeProvider);
+      ->condition('authmap.provider', $provider);
   }
 
   /**
