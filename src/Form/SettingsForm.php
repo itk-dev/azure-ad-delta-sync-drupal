@@ -53,6 +53,8 @@ final class SettingsForm extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\azure_ad_delta_sync\UserManagerInterface $userManager
    *   The user manager.
+   * @param \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper $configHelper
+   *   The configuration helper.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

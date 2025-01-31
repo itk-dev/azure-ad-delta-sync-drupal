@@ -82,6 +82,8 @@ class UserManager implements UserManagerInterface {
    *   The request stack.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper $configHelper
+   *   The configuration helper.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException

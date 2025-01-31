@@ -128,17 +128,18 @@ class ConfigHelper {
 
   /**
    * Escape provider id.
+   *
+   * @todo talk to Mikkel about this
+   * private function escapeProviderId(string $input) {
+   *  return str_replace(".", "__dot__", $input);
+   * }
    */
-  private function escapeProviderId(string $input) {
-    return str_replace(".", "__dot__", $input);
-  }
 
   /**
    * Unescape provider id.
    */
-  // Todo talk to Mikkel about this
-  // private function unescapeProviderId(string $input) {
-  //   return str_replace("__dot__", ".", $input);
-  // }
+  private function unescapeProviderId(string $input) {
+    return str_replace("__dot__", ".", $input);
+  }
 
 }
