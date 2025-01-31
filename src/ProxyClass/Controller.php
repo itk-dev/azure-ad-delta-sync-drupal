@@ -2,7 +2,7 @@
 // phpcs:ignoreFile
 
 /**
- * This file was generated via php core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' "web/modules/contrib/azure-ad-delta-sync-drupal/src".
+ * This file was generated via php core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' "web/modules/contrib/azure_ad_delta_sync/src".
  */
 
 namespace Drupal\azure_ad_delta_sync\ProxyClass {
