@@ -127,17 +127,6 @@ class ConfigHelper {
   }
 
   /**
-   * Escape provider id.
-   *
-   * @todo talk to Mikkel about this
-   * private function escapeProviderId(string $input) {
-   *  // Drupal will not accept a . in configuration keys.
-   *  // https://www.drupal.org/node/2297311
-   *  return str_replace(".", "__dot__", $input);
-   * }
-   */
-
-  /**
    * Unescape provider id.
    */
   private function unescapeProviderId(string $input) {
