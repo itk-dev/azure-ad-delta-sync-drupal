@@ -149,6 +149,7 @@ class UserManagerTest extends BrowserTestBase {
       $this->container->get('entity_type.manager'),
       $configFactory,
       $this->container->get('database'),
+      $this->container->get('request_stack'),
       $this->container->get('module_handler'),
       $logger
     );

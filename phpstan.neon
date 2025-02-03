@@ -1,0 +1,10 @@
+parameters:
+  paths:
+    - .
+  level: 5
+  customRulesetUsed: true
+  reportUnmatchedIgnoredErrors: false
+  excludePaths:
+      - src/ProxyClass/*
+      - tests/src/Functional/UserManagerTest.php
+      - vendor

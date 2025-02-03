@@ -70,17 +70,17 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
-        public function run(\ItkDev\AzureAdDeltaSync\Handler\HandlerInterface $handler)
+        public function run(\ItkDev\AzureAdDeltaSync\Handler\HandlerInterface $handler): void
         {
-            return $this->lazyLoadItself()->run($handler);
+            $this->lazyLoadItself()->run($handler);
         }
 
         /**
          * {@inheritdoc}
          */
-        public function configureOptions(\Symfony\Component\OptionsResolver\OptionsResolver $resolver)
+        public function configureOptions(\Symfony\Component\OptionsResolver\OptionsResolver $resolver): void
         {
-            return $this->lazyLoadItself()->configureOptions($resolver);
+            $this->lazyLoadItself()->configureOptions($resolver);
         }
 
     }

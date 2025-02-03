@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -o errexit -o errtrace -o noclobber -o nounset -o pipefail
+IFS=$'\n\t'
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$script_dir"
+
+execute() {
+  compose exec drupal php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\UserManager' "$module_path/src"
+  compose exec drupal php web/core/scripts/generate-proxy-class.php 'Drupal\azure_ad_delta_sync\Controller' "$module_path/src"
+}
+
+source "$script_dir/base"

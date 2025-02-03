@@ -2,10 +2,9 @@
 
 namespace Drupal\azure_ad_delta_sync;
 
-use Drupal\azure_ad_delta_sync\Form\SettingsForm;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Psr\Http\Client\ClientInterface;
 use ItkDev\AzureAdDeltaSync\Controller as BaseController;
+use Psr\Http\Client\ClientInterface;
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 
 /**
  * The controller implementation.
@@ -15,13 +14,11 @@ class Controller extends BaseController implements ControllerInterface {
   /**
    * Constructor.
    */
-  public function __construct(ClientInterface $client, ConfigFactoryInterface $configFactory) {
-    $moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
+  public function __construct(ClientInterface $client, ConfigHelper $configHelper) {
     $options = [
-      'client_id' => $moduleConfig->get('azure.client_id'),
-      'client_secret' => $moduleConfig->get('azure.client_secret'),
-      'group_id' => $moduleConfig->get('azure.group_id'),
-      'tenant_id' => $moduleConfig->get('azure.tenant_id'),
+      'security_key' => $configHelper->getConfiguration('azure.security_key'),
+      'client_secret' => $configHelper->getConfiguration('azure.client_secret'),
+      'uri' => $configHelper->getConfiguration('azure.uri'),
     ];
     parent::__construct($client, $options);
   }

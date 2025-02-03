@@ -2,18 +2,15 @@
 
 namespace Drupal\azure_ad_delta_sync;
 
-use Drupal\azure_ad_delta_sync\Form\SettingsForm;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\drupal_psr6_cache\Cache\CacheItem;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 
 /**
  * User manager.
@@ -21,16 +18,14 @@ use Symfony\Component\Routing\Route;
 class UserManager implements UserManagerInterface {
   use StringTranslationTrait;
 
-  private const MODULE = 'azure_ad_delta_sync';
-  private const MARKER = 'delete';
-  private const CACHE_KEY_USER_IDS = 'azure_ad_delta_sync_user_ids';
-
   /**
-   * The user data.
+   * The userIds.
    *
-   * @var \Psr\Cache\CacheItemPoolInterface
+   * @var array|int[]
+   *
+   * @phpstan-var array<mixed, mixed>
    */
-  private $cacheItemPool;
+  private array $userIds;
 
   /**
    * The user storage.
@@ -40,11 +35,11 @@ class UserManager implements UserManagerInterface {
   private $userStorage;
 
   /**
-   * The module config.
+   * The config helper.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig
+   * @var \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
    */
-  private $moduleConfig;
+  private $configHelper;
 
   /**
    * The database connection.
@@ -52,20 +47,6 @@ class UserManager implements UserManagerInterface {
    * @var \Drupal\Core\Database\Connection
    */
   private $database;
-
-  /**
-   * The request stack.
-   *
-   * @var \Symfony\Component\HttpFoundation\RequestStack
-   */
-  private $requestStack;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  private $moduleHandler;
 
   /**
    * The logger.
@@ -78,103 +59,92 @@ class UserManager implements UserManagerInterface {
    * The options.
    *
    * @var array
+   *
+   * @phpstan-var array<mixed, mixed>
    */
-  private $options;
+  private array $options;
 
   /**
    * UserManager constructor.
    *
-   * @param \Psr\Cache\CacheItemPoolInterface $cacheItemPool
-   *   The user data.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   The config factory.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The request stack.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
+   * @param \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper $configHelper
+   *   The configuration helper.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(CacheItemPoolInterface $cacheItemPool, EntityTypeManager $entityTypeManager, ConfigFactoryInterface $configFactory, Connection $database, ModuleHandlerInterface $moduleHandler, LoggerInterface $logger) {
-    $this->cacheItemPool = $cacheItemPool;
+  public function __construct(EntityTypeManager $entityTypeManager, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger, ConfigHelper $configHelper) {
     $this->userStorage = $entityTypeManager->getStorage('user');
-    $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->database = $database;
-    $this->moduleHandler = $moduleHandler;
     $this->logger = $logger;
+    $this->configHelper = $configHelper;
+    $this->userIds = [];
     $this->validateConfig();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setOptions(array $options) {
+  public function setOptions(array $options): void {
     $this->options = $options;
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-return array<mixed, mixed>
    */
   public function loadManagedUserIds(): array {
-    $userIds = &drupal_static(__FUNCTION__);
-    if (!isset($userIds)) {
+    $managedUserIds = &drupal_static(__FUNCTION__);
+    if (!isset($managedUserIds)) {
       $query = $this->userStorage->getQuery()
         ->accessCheck(FALSE);
       // Never delete user 0 and 1.
       $query->condition('uid', [0, 1], 'NOT IN');
 
-      $include = $this->moduleConfig->get('include');
-      if (isset($include['modules'])) {
-        $modules = $include['modules'];
-        if (is_array($modules)) {
-          $modules = array_filter($modules);
-          if (!empty($modules)) {
-            $orCondition = $query->orConditionGroup();
-            foreach ($modules as $module) {
-              $moduleUserIdQuery = $this->getModuleUserIdsQuery($module);
-              if (NULL !== $moduleUserIdQuery) {
-                $orCondition->condition('uid', $moduleUserIdQuery, 'IN');
-              }
-            }
-            $query->condition($orCondition);
+      $providers = $this->configHelper->getProviders();
+      if (!empty($providers)) {
+        $orCondition = $query->orConditionGroup();
+        foreach ($providers as $provider) {
+          $providerUserIdQuery = $this->getProviderUserIdsQuery($provider);
+          if (NULL !== $providerUserIdQuery) {
+            $orCondition->condition('uid', $providerUserIdQuery, 'IN');
           }
         }
+        $query->condition($orCondition);
+      }
+      $roles = $this->configHelper->getRoles();
+      if (!empty($roles)) {
+        $query->condition('roles', $roles, 'NOT IN');
       }
 
-      $exclude = $this->moduleConfig->get('exclude');
-      if (isset($exclude['roles'])) {
-        $roles = array_filter($exclude['roles']);
-        if (!empty($roles)) {
-          $query->condition('roles', $roles, 'NOT IN');
-        }
+      $users = $this->configHelper->getUsers();
+      if (!empty($users)) {
+        $query->condition('uid', $users, 'NOT IN');
       }
 
-      if (isset($exclude['users'])) {
-        $users = $exclude['users'];
-        if (!empty($users)) {
-          $query->condition('uid', $users, 'NOT IN');
-        }
-      }
-
-      $userIds = $query->execute();
+      $managedUserIds = $query->execute();
     }
 
-    return $userIds;
+    return $managedUserIds;
   }
 
   /**
    * {@inheritdoc}
    */
   public function collectUsersForDeletionList(): void {
-    $userIds = $this->loadManagedUserIds();
-    $this->cacheUserIdsForDeletion($userIds);
+    $managedUserIds = $this->loadManagedUserIds();
+    $this->userIds = $managedUserIds;
     $this->logger->info($this->formatPlural(
-      count($userIds),
+      count($this->userIds),
       '1 user marked for deletion.',
       '@count users marked for deletion.'
     ));
@@ -182,19 +152,19 @@ class UserManager implements UserManagerInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $users
    */
   public function removeUsersFromDeletionList(array $users): void {
-    $userIdClaim = $this->moduleConfig->get('azure.user_id_claim');
-    $userIdField = $this->moduleConfig->get('drupal.user_id_field');
+    $userIdClaim = $this->configHelper->getConfiguration('azure.user_id_claim');
+    $userIdField = $this->configHelper->getConfiguration('drupal.user_id_field');
 
     $this->logger->info($this->formatPlural(
       count($users),
       'Retaining one user.',
       'Retaining @count users.'
     ));
-    $cachedUserIdsForDeletion = $this->getCachedUserIdsForDeletion();
-    if (is_array($cachedUserIdsForDeletion)) {
-      $userIdsToKeep = array_map(
+    $userIdsToKeep = array_map(
         static function (array $user) use ($userIdClaim) {
           if (!isset($user[$userIdClaim])) {
             throw new \RuntimeException(sprintf('Cannot get user id (%s)', $userIdClaim));
@@ -204,14 +174,12 @@ class UserManager implements UserManagerInterface {
         $users
       );
 
-      $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
+    $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
 
-      $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
-      foreach ($users as $user) {
-        $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
-        unset($cachedUserIdsForDeletion[$user->id()]);
-      }
-      $this->cacheUserIdsForDeletion($cachedUserIdsForDeletion);
+    $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
+    foreach ($users as $user) {
+      $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
+      unset($this->userIds[$user->id()]);
     }
   }
 
@@ -219,11 +187,11 @@ class UserManager implements UserManagerInterface {
    * {@inheritdoc}
    */
   public function commitDeletionList(): void {
-    $method = $this->moduleConfig->get('user_cancel_method');
+    $cancelMethod = $this->configHelper->getUserCancelMethod();
     $deletedUserIds = [];
-    $userIds = $this->getCachedUserIdsForDeletion();
-    foreach ($userIds as $userId) {
-      user_cancel([], $userId, $method);
+
+    foreach ($this->userIds as $userId) {
+      user_cancel([], $userId, $cancelMethod);
       $deletedUserIds[] = $userId;
     }
 
@@ -261,64 +229,31 @@ class UserManager implements UserManagerInterface {
   }
 
   /**
-   * Get module user ids select query.
+   * Get provider user ids select query.
    *
-   * @param string $module
-   *   The module.
+   * @param string $provider
+   *   The provider.
    *
-   * @return null|\Drupal\Core\Database\Query\SelectInterface
+   * @return \Drupal\Core\Database\Query\SelectInterface
    *   The select query.
    */
-  private function getModuleUserIdsQuery(string $module): ?SelectInterface {
-    if (!$this->moduleHandler->moduleExists($module)) {
-      return NULL;
-    }
-    switch ($module) {
-      case 'openid_connect':
-        return $this->database
-          ->select('users_data')
-          ->fields('users_data', ['uid'])
-          ->condition('users_data.module', 'openid_connect')
-          ->condition('users_data.name', 'oidc_name');
-
-      case 'samlauth':
-        return $this->database
-          ->select('authmap')
-          ->fields('authmap', ['uid'])
-          ->condition('authmap.provider', 'samlauth');
-
-      default:
-        throw new \RuntimeException(sprintf('Unknown module: %s', $module));
-    }
-  }
-
-  /**
-   * Set user ids.
-   */
-  private function cacheUserIdsForDeletion(array $userIds) {
-    $item = new CacheItem(self::CACHE_KEY_USER_IDS, $userIds, TRUE);
-    $this->cacheItemPool->save($item);
-  }
-
-  /**
-   * Get user ids.
-   */
-  private function getCachedUserIdsForDeletion(): ?array {
-    $item = $this->cacheItemPool->getItem(self::CACHE_KEY_USER_IDS);
-
-    return $item->isHit() ? $item->get() : NULL;
+  private function getProviderUserIdsQuery(string $provider): SelectInterface {
+    return $this->database
+      ->select('authmap')
+      ->fields('authmap', ['uid'])
+      ->condition('authmap.provider', $provider);
   }
 
   /**
    * Validate config.
    */
-  private function validateConfig() {
+  private function validateConfig(): void {
     $required = [
       'azure.user_id_claim',
       'drupal.user_id_field',
     ];
     foreach ($required as $name) {
-      if (empty($this->moduleConfig->get($name))) {
+      if (empty($this->configHelper->getConfiguration($name))) {
         throw new \InvalidArgumentException(sprintf('Invalid or missing configuration in %s: %s', static::class, $name));
       }
     }

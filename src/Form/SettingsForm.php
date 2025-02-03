@@ -5,15 +5,15 @@ namespace Drupal\azure_ad_delta_sync\Form;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 
 /**
  * Settings form.
  */
-class SettingsForm extends ConfigFormBase {
+final class SettingsForm extends ConfigFormBase {
   public const SETTINGS = 'azure_ad_delta_sync.settings';
 
   /**
@@ -31,13 +31,6 @@ class SettingsForm extends ConfigFormBase {
   private $roleStorage;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  private $moduleHandler;
-
-  /**
    * The user manager.
    *
    * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
@@ -51,31 +44,30 @@ class SettingsForm extends ConfigFormBase {
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
-   *   The module handler.
    * @param \Drupal\azure_ad_delta_sync\UserManagerInterface $userManager
    *   The user manager.
+   * @param \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper $configHelper
+   *   The configuration helper.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, ModuleHandlerInterface $moduleHandler, UserManagerInterface $userManager) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager, private ConfigHelper $configHelper) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
-    $this->moduleHandler = $moduleHandler;
     $this->userManager = $userManager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('module_handler'),
-      $container->get('azure_ad_delta_sync.user_manager')
+      $container->get('azure_ad_delta_sync.user_manager'),
+      $container->get('azure_ad_delta_sync.config_helper')
     );
   }
 
@@ -88,8 +80,11 @@ class SettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $form
+   * @phpstan-return array<mixed, mixed>
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Form constructor.
     $form = parent::buildForm($form, $form_state);
     // Default settings.
@@ -163,11 +158,11 @@ class SettingsForm extends ConfigFormBase {
       '#markup' => $this->t('<p>Settings for connection to the Azure API to get users. Your IdP provider can provide the actual values needed and, for security reasons, these should be set in <code>settings.local.php</code>.</p>'),
     ];
 
-    $form['azure']['client_id'] = [
+    $form['azure']['security_key'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Azure client id'),
-      '#default_value' => $defaultValues['client_id'] ?? NULL,
-      '#description' => $this->t("The Azure client id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['client_id'] = '…';</code>."),
+      '#title' => $this->t('Azure security key'),
+      '#default_value' => $defaultValues['security_key'] ?? NULL,
+      '#description' => $this->t("The Azure security key. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['security_key'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
@@ -179,19 +174,11 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['azure']['group_id'] = [
+    $form['azure']['uri'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Azure group id'),
-      '#default_value' => $defaultValues['group_id'] ?? NULL,
-      '#description' => $this->t("The Azure group id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['group_id'] = '…';</code>."),
-      '#required' => TRUE,
-    ];
-
-    $form['azure']['tenant_id'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Azure tenant id'),
-      '#default_value' => $defaultValues['tenant_id'] ?? NULL,
-      '#description' => $this->t("The Azure tenant id. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['tenant_id'] = '…';</code>."),
+      '#title' => $this->t('Azure uri'),
+      '#default_value' => $defaultValues['uri'] ?? NULL,
+      '#description' => $this->t("The Azure uri. Should be set in <code>settings.local.php</code>: <code>\$config['azure_ad_delta_sync.settings']['azure']['uri'] = '…';</code>."),
       '#required' => TRUE,
     ];
 
@@ -210,21 +197,14 @@ class SettingsForm extends ConfigFormBase {
       '#tree' => TRUE,
     ];
 
-    $options = array_filter(
-      [
-        'openid_connect' => $this->t('OpenId Connect'),
-        'samlauth' => $this->t('SAML Authentication'),
-      ],
-      [$this->moduleHandler, 'moduleExists'],
-      ARRAY_FILTER_USE_KEY
-    );
+    $options = $this->configHelper->getAllUserProviders();
 
-    $form['include']['modules'] = [
+    $form['include']['providers'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Modules'),
+      '#title' => $this->t('providers'),
       '#options' => $options,
-      '#default_value' => $defaultValues['modules'] ?? [],
-      '#description' => $this->t('Manged only Drupal users authenticated by one of the selected modules. If no modules are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
+      '#default_value' => $defaultValues['providers'] ?? [],
+      '#description' => $this->t('Manage only Drupal users authenticated by one of the selected providers. If no providers are selected all Drupal users are managed unless excluded (cf. “Exclude users”).'),
     ];
 
     $defaultValues = $config->get('exclude') ?? [];
@@ -265,25 +245,28 @@ class SettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-param array<mixed, mixed> $form
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config(self::SETTINGS);
-    $config->set('drupal', $form_state->getValue('drupal'));
-    $config->set('azure', $form_state->getValue('azure'));
-    $config->set('include', $form_state->getValue('include'));
-    $exclude = $form_state->getValue('exclude');
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $this->configHelper->setConfiguration('drupal', $form_state->getValue('drupal'));
+    $this->configHelper->setConfiguration('azure', $form_state->getValue('azure'));
+    $this->configHelper->setConfiguration('include', $form_state->getValue('include'));
+    $exclude = $this->configHelper->getConfiguration('exclude');
     // Extract user ids.
     $exclude['users'] = array_column($exclude['users'] ?? [], 'target_id');
-    $config->set('exclude', $exclude);
-    $config->save();
+    $this->configHelper->setConfiguration('exclude', $exclude);
+    $this->configHelper->saveConfig();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @phpstan-return array<mixed, mixed>
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return [
       self::SETTINGS,
     ];
