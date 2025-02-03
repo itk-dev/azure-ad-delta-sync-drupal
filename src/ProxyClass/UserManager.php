@@ -70,9 +70,9 @@ namespace Drupal\azure_ad_delta_sync\ProxyClass {
         /**
          * {@inheritdoc}
          */
-        public function setOptions(array $options)
+        public function setOptions(array $options): void
         {
-            return $this->lazyLoadItself()->setOptions($options);
+            $this->lazyLoadItself()->setOptions($options);
         }
 
         /**
