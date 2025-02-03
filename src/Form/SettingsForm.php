@@ -40,7 +40,7 @@ final class SettingsForm extends ConfigFormBase {
   /**
    * The config helper.
    *
-   * @var \ Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+   * @var \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
    */
   private $configHelper;
 

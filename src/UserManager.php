@@ -37,16 +37,9 @@ class UserManager implements UserManagerInterface {
   /**
    * The config helper.
    *
-   * @var \ Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+   * @var \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
    */
   private $configHelper;
-
-  /**
-   * The oidc storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  private $oidcStorage;
 
   /**
    * The database connection.
@@ -90,7 +83,6 @@ class UserManager implements UserManagerInterface {
    */
   public function __construct(EntityTypeManager $entityTypeManager, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger, ConfigHelper $configHelper) {
     $this->userStorage = $entityTypeManager->getStorage('user');
-    $this->oidcStorage = $entityTypeManager->getStorage('openid_connect_client');
     $this->database = $database;
     $this->logger = $logger;
     $this->configHelper = $configHelper;
