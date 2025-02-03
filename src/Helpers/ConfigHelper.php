@@ -94,9 +94,16 @@ class ConfigHelper {
   }
 
   /**
+   * Save.
+   */
+  public function saveConfig() {
+    $this->moduleConfig->save();
+  }
+
+  /**
    * Set configuration.
    */
-  public function setConfiguration(array $config, string $configName): void {
+  public function setConfiguration(string $configName, array $config): void {
     $config[$configName] = $config;
   }
 

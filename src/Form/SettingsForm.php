@@ -38,13 +38,6 @@ final class SettingsForm extends ConfigFormBase {
   private $userManager;
 
   /**
-   * The config helper.
-   *
-   * @var \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
-   */
-  private $configHelper;
-
-  /**
    * SettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -59,12 +52,11 @@ final class SettingsForm extends ConfigFormBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager, ConfigHelper $configHelper) {
+  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager, UserManagerInterface $userManager, private ConfigHelper $configHelper) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
     $this->userManager = $userManager;
-    $this->configHelper = $configHelper;
   }
 
   /**
@@ -257,15 +249,14 @@ final class SettingsForm extends ConfigFormBase {
    * @phpstan-param array<mixed, mixed> $form
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $config = $this->config(self::SETTINGS);
-    $config->set('drupal', $form_state->getValue('drupal'));
-    $config->set('azure', $form_state->getValue('azure'));
-    $config->set('include', $form_state->getValue('include'));
-    $exclude = $form_state->getValue('exclude');
+    $this->configHelper->setConfiguration('drupal', $form_state->getValue('drupal'));
+    $this->configHelper->setConfiguration('azure', $form_state->getValue('azure'));
+    $this->configHelper->setConfiguration('include', $form_state->getValue('include'));
+    $exclude = $this->configHelper->getConfiguration('exclude');
     // Extract user ids.
     $exclude['users'] = array_column($exclude['users'] ?? [], 'target_id');
-    $config->set('exclude', $exclude);
-    $config->save();
+    $this->configHelper->setConfiguration('exclude', $exclude);
+    $this->configHelper->saveConfig();
 
     parent::submitForm($form, $form_state);
   }
