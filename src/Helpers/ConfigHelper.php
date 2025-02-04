@@ -19,7 +19,6 @@ class ConfigHelper {
    */
   private $moduleConfig;
 
-
   /**
    * The oidc storage.
    *
