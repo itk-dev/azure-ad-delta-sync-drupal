@@ -4,7 +4,7 @@ namespace Drupal\azure_ad_delta_sync;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
-use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Psr\Log\LoggerInterface;
@@ -35,27 +35,6 @@ class UserManager implements UserManagerInterface {
   private $userStorage;
 
   /**
-   * The config helper.
-   *
-   * @var \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
-   */
-  private $configHelper;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  private $database;
-
-  /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  private $logger;
-
-  /**
    * The options.
    *
    * @var array
@@ -67,7 +46,7 @@ class UserManager implements UserManagerInterface {
   /**
    * UserManager constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
@@ -81,11 +60,8 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(EntityTypeManager $entityTypeManager, Connection $database, readonly RequestStack $requestStack, LoggerInterface $logger, ConfigHelper $configHelper) {
+  public function __construct(protected EntityTypeManagerInterface $entityTypeManager, private Connection $database, readonly RequestStack $requestStack, private LoggerInterface $logger, private ConfigHelper $configHelper) {
     $this->userStorage = $entityTypeManager->getStorage('user');
-    $this->database = $database;
-    $this->logger = $logger;
-    $this->configHelper = $configHelper;
     $this->userIds = [];
     $this->validateConfig();
   }
