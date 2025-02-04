@@ -1,37 +1,22 @@
 services:
-  logger.channel.azure_ad_delta_sync:
-    parent: logger.channel_base
-    arguments:
-      - 'azure_ad_delta_sync'
-
-  azure_ad_delta_sync.controller:
-    class: Drupal\azure_ad_delta_sync\Controller
-    lazy: true
-    arguments:
-      - '@azure_ad_delta_sync.http_client'
-      - '@azure_ad_delta_sync.config_helper'
-
-  azure_ad_delta_sync.user_manager:
-    class: Drupal\azure_ad_delta_sync\UserManager
-    lazy: true
-    arguments:
-      - '@entity_type.manager'
-      - '@database'
-      - '@request_stack'
-      - '@logger.channel.azure_ad_delta_sync'
-      - '@azure_ad_delta_sync.config_helper'
-
-  azure_ad_delta_sync.config_helper:
-    class: Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
+  logger.channel_base:
     autowire: true
 
-  azure_ad_delta_sync.commands:
-    class: Drupal\azure_ad_delta_sync\Commands\Commands
-    arguments:
-      - '@azure_ad_delta_sync.controller'
-      - '@azure_ad_delta_sync.user_manager'
+  Drupal\azure_ad_delta_sync\Controller:
+    lazy: true
+    autowire: true
+
+  Drupal\azure_ad_delta_sync\UserManager:
+    lazy: true
+    autowire: true
+
+  Drupal\azure_ad_delta_sync\Helpers\ConfigHelper:
+    autowire: true
+
+  Drupal\azure_ad_delta_sync\Commands\Commands:
+    autowire: true
     tags:
       - { name: drush.command }
 
-  azure_ad_delta_sync.http_client:
-    class: Symfony\Component\HttpClient\Psr18Client
+  Symfony\Component\HttpClient\Psr18Client:
+  
