@@ -23,9 +23,7 @@ services:
 
   azure_ad_delta_sync.config_helper:
     class: Drupal\azure_ad_delta_sync\Helpers\ConfigHelper
-    arguments:
-      - '@config.factory'
-      - '@entity_type.manager'
+    autowire: true
 
   azure_ad_delta_sync.commands:
     class: Drupal\azure_ad_delta_sync\Commands\Commands
