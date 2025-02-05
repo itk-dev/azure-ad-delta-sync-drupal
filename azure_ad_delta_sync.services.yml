@@ -1,6 +1,8 @@
 services:
-  logger.channel_base:
-    autowire: true
+  logger.channel.azure_ad_delta_sync:
+    parent: logger.channel_base
+    arguments:
+      - 'azure_ad_delta_sync'
 
   Drupal\azure_ad_delta_sync\Controller:
     lazy: true
@@ -17,5 +19,3 @@ services:
     autowire: true
     tags:
       - { name: drush.command }
-
-  Symfony\Component\HttpClient\Psr18Client:

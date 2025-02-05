@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * User manager.
@@ -60,7 +61,14 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(protected EntityTypeManagerInterface $entityTypeManager, private Connection $database, readonly RequestStack $requestStack, private LoggerInterface $logger, private ConfigHelper $configHelper) {
+  public function __construct(
+      protected EntityTypeManagerInterface $entityTypeManager, 
+      private Connection $database, 
+      readonly RequestStack $requestStack, 
+      #[Autowire(service: 'logger.channel.azure_ad_delta_sync')]
+      private LoggerInterface $logger,
+      private ConfigHelper $configHelper) 
+    {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->userIds = [];
     $this->validateConfig();
