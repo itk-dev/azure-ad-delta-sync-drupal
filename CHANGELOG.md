@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-12](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/12)
+  autowire confighelper
+
 ## [2.0.0] - 2025-02-03
 
 * Upgrade Drupal version
