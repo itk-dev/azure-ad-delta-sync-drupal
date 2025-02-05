@@ -62,13 +62,13 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(
-      protected EntityTypeManagerInterface $entityTypeManager, 
-      private Connection $database, 
-      readonly RequestStack $requestStack, 
-      #[Autowire(service: 'logger.channel.azure_ad_delta_sync')]
-      private LoggerInterface $logger,
-      private ConfigHelper $configHelper) 
-    {
+    protected EntityTypeManagerInterface $entityTypeManager,
+    private Connection $database,
+    readonly RequestStack $requestStack,
+    #[Autowire(service: 'logger.channel.azure_ad_delta_sync')]
+    private LoggerInterface $logger,
+    private ConfigHelper $configHelper,
+  ) {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->userIds = [];
     $this->validateConfig();
