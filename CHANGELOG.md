@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-14](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/14)
+  Added Rector and refactored and cleaned up code
 * [PR-12](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/12)
   Autowire services
 

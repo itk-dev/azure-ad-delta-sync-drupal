@@ -34,7 +34,10 @@ class ConfigHelper {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(protected ConfigFactoryInterface $configFactory, protected EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(
+    ConfigFactoryInterface $configFactory,
+    EntityTypeManagerInterface $entityTypeManager,
+  ) {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->oidcStorage = $entityTypeManager->getStorage('openid_connect_client');
   }
@@ -86,10 +89,7 @@ class ConfigHelper {
    */
   public function getUsers() {
     $exclude = $this->getConfiguration('exclude');
-    if (isset($exclude['users'])) {
-      return $exclude['users'];
-    }
-    return FALSE;
+    return $exclude['users'] ?? FALSE;
   }
 
   /**

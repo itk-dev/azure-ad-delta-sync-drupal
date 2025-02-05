@@ -62,12 +62,12 @@ class UserManager implements UserManagerInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public function __construct(
-    protected EntityTypeManagerInterface $entityTypeManager,
-    private Connection $database,
-    readonly RequestStack $requestStack,
+    EntityTypeManagerInterface $entityTypeManager,
+    private readonly Connection $database,
+    private readonly RequestStack $requestStack,
     #[Autowire(service: 'logger.channel.azure_ad_delta_sync')]
-    private LoggerInterface $logger,
-    private ConfigHelper $configHelper,
+    private readonly LoggerInterface $logger,
+    private readonly ConfigHelper $configHelper,
   ) {
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->userIds = [];
@@ -77,6 +77,7 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function setOptions(array $options): void {
     $this->options = $options;
   }
@@ -86,6 +87,7 @@ class UserManager implements UserManagerInterface {
    *
    * @phpstan-return array<mixed, mixed>
    */
+  #[\Override]
   public function loadManagedUserIds(): array {
     $managedUserIds = &drupal_static(__FUNCTION__);
     if (!isset($managedUserIds)) {
@@ -124,6 +126,7 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function collectUsersForDeletionList(): void {
     $managedUserIds = $this->loadManagedUserIds();
     $this->userIds = $managedUserIds;
@@ -139,6 +142,7 @@ class UserManager implements UserManagerInterface {
    *
    * @phpstan-param array<mixed, mixed> $users
    */
+  #[\Override]
   public function removeUsersFromDeletionList(array $users): void {
     $userIdClaim = $this->configHelper->getConfiguration('azure.user_id_claim');
     $userIdField = $this->configHelper->getConfiguration('drupal.user_id_field');
@@ -170,6 +174,7 @@ class UserManager implements UserManagerInterface {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function commitDeletionList(): void {
     $cancelMethod = $this->configHelper->getUserCancelMethod();
     $deletedUserIds = [];

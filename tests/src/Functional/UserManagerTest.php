@@ -30,6 +30,7 @@ class UserManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   protected function setUp(): void {
     parent::setUp();
     $this->createRoles();
@@ -56,7 +57,7 @@ class UserManagerTest extends BrowserTestBase {
    * @return array[]
    *   List of [module config, expected value].
    */
-  public function loadManagedUserIdsProvider() {
+  public static function loadManagedUserIdsProvider() {
     return [
 
       [
