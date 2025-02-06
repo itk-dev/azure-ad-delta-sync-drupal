@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-13](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/13)
+  Add dependencies openid_connect:openid_connect
 * [PR-12](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/12)
   Autowire services
 
