@@ -4,7 +4,7 @@ namespace Drupal\azure_ad_delta_sync\Helpers;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\azure_ad_delta_sync\Form\SettingsForm;
-use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Config helper.
@@ -19,7 +19,6 @@ class ConfigHelper {
    */
   private $moduleConfig;
 
-
   /**
    * The oidc storage.
    *
@@ -32,10 +31,10 @@ class ConfigHelper {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManager $entityTypeManager) {
+  public function __construct(protected ConfigFactoryInterface $configFactory, protected EntityTypeManagerInterface $entityTypeManager) {
     $this->moduleConfig = $configFactory->get(SettingsForm::SETTINGS);
     $this->oidcStorage = $entityTypeManager->getStorage('openid_connect_client');
   }
