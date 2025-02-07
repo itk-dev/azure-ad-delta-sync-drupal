@@ -14,7 +14,10 @@ class Controller extends BaseController implements ControllerInterface {
   /**
    * Constructor.
    */
-  public function __construct(ClientInterface $client, ConfigHelper $configHelper) {
+  public function __construct(
+    ClientInterface $client,
+    ConfigHelper $configHelper,
+  ) {
     $options = [
       'security_key' => $configHelper->getConfiguration('azure.security_key'),
       'client_secret' => $configHelper->getConfiguration('azure.client_secret'),

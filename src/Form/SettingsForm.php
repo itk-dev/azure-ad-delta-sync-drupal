@@ -14,7 +14,7 @@ use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
  * Settings form.
  */
 final class SettingsForm extends ConfigFormBase {
-  public const SETTINGS = 'azure_ad_delta_sync.settings';
+  public const string SETTINGS = 'azure_ad_delta_sync.settings';
 
   /**
    * The user storage.
@@ -31,13 +31,6 @@ final class SettingsForm extends ConfigFormBase {
   private $roleStorage;
 
   /**
-   * The user manager.
-   *
-   * @var \Drupal\azure_ad_delta_sync\UserManagerInterface
-   */
-  private $userManager;
-
-  /**
    * SettingsForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -52,16 +45,21 @@ final class SettingsForm extends ConfigFormBase {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  public function __construct(ConfigFactoryInterface $configFactory, EntityTypeManagerInterface $entityTypeManager, UserManagerInterface $userManager, private ConfigHelper $configHelper) {
+  public function __construct(
+    ConfigFactoryInterface $configFactory,
+    EntityTypeManagerInterface $entityTypeManager,
+    private readonly UserManagerInterface $userManager,
+    private readonly ConfigHelper $configHelper,
+  ) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
-    $this->userManager = $userManager;
   }
 
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
@@ -74,6 +72,7 @@ final class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function getFormId() {
     return 'azure_ad_delta_sync_config';
   }
@@ -84,6 +83,7 @@ final class SettingsForm extends ConfigFormBase {
    * @phpstan-param array<mixed, mixed> $form
    * @phpstan-return array<mixed, mixed>
    */
+  #[\Override]
   public function buildForm(array $form, FormStateInterface $form_state): array {
     // Form constructor.
     $form = parent::buildForm($form, $form_state);
@@ -248,6 +248,7 @@ final class SettingsForm extends ConfigFormBase {
    *
    * @phpstan-param array<mixed, mixed> $form
    */
+  #[\Override]
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->configHelper->setConfiguration('drupal', $form_state->getValue('drupal'));
     $this->configHelper->setConfiguration('azure', $form_state->getValue('azure'));
@@ -266,6 +267,7 @@ final class SettingsForm extends ConfigFormBase {
    *
    * @phpstan-return array<mixed, mixed>
    */
+  #[\Override]
   protected function getEditableConfigNames(): array {
     return [
       self::SETTINGS,

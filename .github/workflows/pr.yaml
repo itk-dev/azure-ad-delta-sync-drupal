@@ -172,3 +172,12 @@ jobs:
           ./scripts/generate-proxy-classes
       - name: Check nothing has changed
         run: git diff --exit-code
+
+  rector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./scripts/rector
+      - name: Check nothing has changed
+        run: git diff --exit-code

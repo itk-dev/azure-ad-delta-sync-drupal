@@ -4,6 +4,7 @@
 
   <file>.</file>
 
+  <exclude-pattern>rector.php</exclude-pattern>
   <exclude-pattern>src/ProxyClass/</exclude-pattern>
   <exclude-pattern>vendor/</exclude-pattern>
 
