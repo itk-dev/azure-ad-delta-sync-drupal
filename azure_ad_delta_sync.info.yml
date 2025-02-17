@@ -6,3 +6,6 @@ type: module
 core_version_requirement: ^10 || ^11
 
 configure: azure_ad_delta_sync.settings
+
+dependencies:
+  - openid_connect:openid_connect
