@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-15](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/15)
+  update setConfiguration to actually work
 * [PR-14](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/14)
   Added Rector and refactored and cleaned up code
 * [PR-13](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/13)
