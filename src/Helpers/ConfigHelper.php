@@ -103,7 +103,7 @@ class ConfigHelper {
    * Set configuration.
    */
   public function setConfiguration(string $configName, array $config): void {
-    $config[$configName] = $config;
+    $this->moduleConfig->set($configName, $config);
   }
 
   /**
