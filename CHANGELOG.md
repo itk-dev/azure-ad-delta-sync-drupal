@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-16](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/16)
+  move requires to require dev
 * [PR-15](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/15)
   update setConfiguration to actually work
 * [PR-14](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/14)
