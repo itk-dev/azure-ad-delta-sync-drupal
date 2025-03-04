@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2025-03-04
+
 * [PR-16](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/16)
   move requires to require dev
 * [PR-15](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/15)
@@ -31,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Initial release
 
-[Unreleased]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/releases/tag/1.0.0
