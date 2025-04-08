@@ -20,7 +20,7 @@ class UserManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['azure_ad_delta_sync', 'drupal_psr6_cache'];
+  protected static $modules = ['azure_ad_delta_sync'];
 
   /**
    * {@inheritdoc}
@@ -146,7 +146,6 @@ class UserManagerTest extends BrowserTestBase {
     $logger = $this->createMock(LoggerInterface::class);
 
     return new UserManager(
-      $this->container->get('drupal_psr6_cache.cache_item_pool'),
       $this->container->get('entity_type.manager'),
       $configFactory,
       $this->container->get('database'),
