@@ -9,12 +9,13 @@ use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
+use Drush\Commands\AutowireTrait;
 /**
  * Drush commands.
  */
 final class Commands extends DrushCommands {
+
+  use AutowireTrait;
 
   /**
    * Commands constructor.
@@ -25,15 +26,6 @@ final class Commands extends DrushCommands {
   ) {
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): self {
-    return new static(
-      $container->get('Drupal\azure_ad_delta_sync\Controller'),
-      $container->get('Drupal\azure_ad_delta_sync\UserManager'),
-    );
-  }
 
   /**
    * Run.

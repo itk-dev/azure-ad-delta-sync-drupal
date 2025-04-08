@@ -150,7 +150,7 @@ class UserManagerTest extends BrowserTestBase {
       $this->container->get('database'),
       $this->container->get('request_stack'),
       $logger,
-      $this->container->get('Drupal\azure_ad_delta_sync\Helpers\ConfigHelper'),
+      $this->container->get(\Drupal\azure_ad_delta_sync\Helpers\ConfigHelper::class),
     );
   }
 
