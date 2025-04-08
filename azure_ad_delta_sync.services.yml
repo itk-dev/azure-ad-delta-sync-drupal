@@ -1,4 +1,7 @@
 services:
+  _defaults: 
+    autowire: true
+
   logger.channel.azure_ad_delta_sync:
     parent: logger.channel_base
     arguments:
@@ -6,16 +9,12 @@ services:
 
   Drupal\azure_ad_delta_sync\Controller:
     lazy: true
-    autowire: true
 
   Drupal\azure_ad_delta_sync\UserManager:
     lazy: true
-    autowire: true
 
   Drupal\azure_ad_delta_sync\Helpers\ConfigHelper:
-    autowire: true
 
   Drupal\azure_ad_delta_sync\Commands\Commands:
-    autowire: true
     tags:
       - { name: drush.command }
