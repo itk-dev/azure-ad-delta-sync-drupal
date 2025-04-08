@@ -89,6 +89,12 @@ phpstan is used to perform static analysis of the code. Run the following script
 ./scripts/code-analysis
 ```
 
+### Rector
+
+Automatic code upgrades
+
+`./scripts/rector`
+
 ### GitHub Actions
 
 We use [GitHub Actions](https://github.com/features/actions) to check coding standards, perform code analysis and run
