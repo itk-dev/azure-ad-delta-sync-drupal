@@ -147,11 +147,10 @@ class UserManagerTest extends BrowserTestBase {
 
     return new UserManager(
       $this->container->get('entity_type.manager'),
-      $configFactory,
       $this->container->get('database'),
       $this->container->get('request_stack'),
-      $this->container->get('module_handler'),
-      $logger
+      $logger,
+      $this->container->get('Drupal\azure_ad_delta_sync\Helpers\ConfigHelper'),
     );
   }
 
