@@ -30,8 +30,8 @@ final class Commands extends DrushCommands {
    */
   public static function create(ContainerInterface $container): self {
     return new static(
-      $container->get('azure_ad_delta_sync.controller'),
-      $container->get('azure_ad_delta_sync.user_manager'),
+      $container->get('Drupal\azure_ad_delta_sync\Controller'),
+      $container->get('Drupal\azure_ad_delta_sync\UserManager'),
     );
   }
 

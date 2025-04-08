@@ -64,8 +64,8 @@ final class SettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
-      $container->get('azure_ad_delta_sync.user_manager'),
-      $container->get('azure_ad_delta_sync.config_helper'),
+      $container->get('Drupal\azure_ad_delta_sync\UserManager'),
+      $container->get('Drupal\azure_ad_delta_sync\Helpers\ConfigHelper'),
     );
   }
 
