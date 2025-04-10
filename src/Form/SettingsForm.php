@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class SettingsForm extends ConfigFormBase {
   use AutowireTrait;
-  
+
   public const string SETTINGS = 'azure_ad_delta_sync.settings';
   /**
    * The user storage.
@@ -50,9 +50,9 @@ final class SettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $configFactory,
     EntityTypeManagerInterface $entityTypeManager,
-    #[Autowire(service: 'Drupal\azure_ad_delta_sync\UserManager')]
+    #[Autowire(service: \Drupal\azure_ad_delta_sync\UserManager::class)]
     private readonly UserManagerInterface $userManager,
-    #[Autowire(service: 'Drupal\azure_ad_delta_sync\Helpers\ConfigHelper')]
+    #[Autowire(service: \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper::class)]
     private readonly ConfigHelper $configHelper,
   ) {
     parent::__construct($configFactory);

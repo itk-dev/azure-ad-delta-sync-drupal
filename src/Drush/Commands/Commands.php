@@ -23,9 +23,9 @@ final class Commands extends DrushCommands {
    * Commands constructor.
    */
   public function __construct(
-    #[Autowire(service: 'Drupal\azure_ad_delta_sync\Controller')]
+    #[Autowire(service: \Drupal\azure_ad_delta_sync\Controller::class)]
     private readonly ControllerInterface $controller,
-    #[Autowire(service: 'Drupal\azure_ad_delta_sync\UserManager')]
+    #[Autowire(service: \Drupal\azure_ad_delta_sync\UserManager::class)]
     private readonly UserManagerInterface $userManager,
   ) {
   }

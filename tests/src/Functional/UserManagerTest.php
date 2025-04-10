@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\azure_ad_delta_sync\Functional;
 
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 use Drupal\azure_ad_delta_sync\UserManager;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -150,7 +151,7 @@ class UserManagerTest extends BrowserTestBase {
       $this->container->get('database'),
       $this->container->get('request_stack'),
       $logger,
-      $this->container->get(\Drupal\azure_ad_delta_sync\Helpers\ConfigHelper::class),
+      $this->container->get(ConfigHelper::class),
     );
   }
 
