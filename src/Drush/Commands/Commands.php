@@ -10,6 +10,8 @@ use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Drush\Commands\AutowireTrait;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
 /**
  * Drush commands.
  */
@@ -21,11 +23,12 @@ final class Commands extends DrushCommands {
    * Commands constructor.
    */
   public function __construct(
+    #[Autowire(service: 'Drupal\azure_ad_delta_sync\Controller')]
     private readonly ControllerInterface $controller,
+    #[Autowire(service: 'Drupal\azure_ad_delta_sync\UserManager')]
     private readonly UserManagerInterface $userManager,
   ) {
   }
-
 
   /**
    * Run.
@@ -41,10 +44,16 @@ final class Commands extends DrushCommands {
     array $options = [
       'dry-run' => NULL,
       'force' => NULL,
+      'test-command-runs' => NULL,
     ],
   ): void {
     $dryRun = $options['dry-run'];
     $force = $options['force'];
+    $testCommandRuns = $options['test-command-runs'];
+
+    if ($testCommandRuns) {
+      return;
+    }
 
     if (!$dryRun && !$force) {
       throw new CommandFailedException('Please specify either --dry-run or --force option.');
@@ -52,7 +61,7 @@ final class Commands extends DrushCommands {
 
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
-      'debug' => $this->output->isDebug(),
+      'debug' => $this->output()->isDebug(),
     ]);
 
     if ($dryRun) {
