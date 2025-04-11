@@ -162,8 +162,6 @@ class UserManager implements UserManagerInterface {
         $users
       );
 
-    $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
-
     $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
     foreach ($users as $user) {
       $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
@@ -191,8 +189,12 @@ class UserManager implements UserManagerInterface {
     ));
     if ($this->options['debug'] ?? FALSE) {
       $users = $this->userStorage->loadMultiple($deletedUserIds);
-      foreach ($users as $user) {
-        $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+      if (empty($users)) {
+        $this->logger->debug(sprintf('No users to be deleted'));
+      } else {
+        foreach ($users as $user) {
+          $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+        }
       }
     }
 
