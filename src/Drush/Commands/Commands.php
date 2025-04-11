@@ -57,6 +57,7 @@ final class Commands extends DrushCommands {
 
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
+      // Shows list of users that are picked for deletion.
       'debug' => $this->output()->isDebug(),
     ]);
 
