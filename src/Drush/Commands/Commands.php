@@ -13,6 +13,7 @@ use Drush\Commands\AutowireTrait;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Drupal\azure_ad_delta_sync\UserManager;
 use Drupal\azure_ad_delta_sync\Controller;
+
 /**
  * Drush commands.
  */
