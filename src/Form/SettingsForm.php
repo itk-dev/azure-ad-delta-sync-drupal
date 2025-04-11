@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drush\Commands\AutowireTrait;
 use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Drupal\azure_ad_delta_sync\UserManager;
 
 /**
  * Settings form.
@@ -50,9 +51,9 @@ final class SettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $configFactory,
     EntityTypeManagerInterface $entityTypeManager,
-    #[Autowire(service: \Drupal\azure_ad_delta_sync\UserManager::class)]
+    #[Autowire(service: UserManager::class)]
     private readonly UserManagerInterface $userManager,
-    #[Autowire(service: \Drupal\azure_ad_delta_sync\Helpers\ConfigHelper::class)]
+    #[Autowire(service: ConfigHelper::class)]
     private readonly ConfigHelper $configHelper,
   ) {
     parent::__construct($configFactory);
