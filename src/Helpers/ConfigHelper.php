@@ -109,7 +109,7 @@ class ConfigHelper {
   /**
    * Get configuration.
    */
-  public function getConfiguration(string $configName): array|string {
+  public function getConfiguration(string $configName): array|string|null {
     return $this->moduleConfig->get($configName);
   }
 
