@@ -169,10 +169,11 @@ class UserManager implements UserManagerInterface {
     $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
     foreach ($users as $user) {
       $this->logger->info(
-        'Retaining user @name.',
-             [
-               '%name' => $user->label(),
-             ]
+        'Retaining user %user (%id)',
+        [
+           '%user' => $user->label(),
+           '%id' => $user->id(),
+         ]
       );
 
       unset($this->userIds[$user->id()]);
