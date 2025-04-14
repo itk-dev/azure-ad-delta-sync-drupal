@@ -193,7 +193,7 @@ class UserManager implements UserManagerInterface {
     }
 
     $this->logger->info(
-      '@count users to be deleted',
+      '@count user(s) to be deleted',
            [
              '%count' => count($deletedUserIds),
            ]
