@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-18](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/18)
+  * Update `container->get` after autowire change
+  * Change logging: <https://drupalize.me/blog/how-log-messages-drupal-8>
+  * Remove unused `drupal_psr6_cache`
+  * Add run-command script to test if command runs
+
 ## [2.0.1] - 2025-03-04
 
 * [PR-16](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/16)

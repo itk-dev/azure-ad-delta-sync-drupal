@@ -21,10 +21,8 @@ $config['azure_ad_delta_sync.settings']['azure']['security_key'] = '…';
 $config['azure_ad_delta_sync.settings']['azure']['client_secret'] = '…';
 ```
 
-Furthermore, you may want to install the [Config
-Ignore](https://www.drupal.org/project/config_ignore) module and ignore the
-`azure_ad_delta_sync.settings` config if committing config to a version control
-system.
+Furthermore, you may want to install the [Config Ignore](https://www.drupal.org/project/config_ignore) module and ignore
+the `azure_ad_delta_sync.settings` config if committing config to a version control system.
 
 ## Usage
 
@@ -39,13 +37,10 @@ Run `vendor/bin/drush azure_ad_delta_sync:run --help` for details on the command
 ## Development
 
 For development you need a full Drupal project. See
-[itk-dev/azure-ad-delta-sync-drupal-test](https://github.com/itk-dev/azure-ad-delta-sync-drupal-test)
-for an example.
+[itk-dev/azure-ad-delta-sync-drupal-test](https://github.com/itk-dev/azure-ad-delta-sync-drupal-test) for an example.
 
-We use lazy services, `azure_ad_delta_sync.user_manager`
-(`Drupal\azure_ad_delta_sync\UserManager`) and `azure_ad_delta_sync.controller`
-(`Drupal\azure_ad_delta_sync\Controller`), which require generating proxy
-classes (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
+We use lazy services, `aDrupal\azure_ad_delta_sync\UserManager` and `Drupal\azure_ad_delta_sync\Controller`, which
+require generating proxy classes (cf. <https://www.webomelette.com/lazy-loaded-services-drupal-8>).
 
 Run the following command to update the proxy classes:
 
@@ -55,8 +50,7 @@ Run the following command to update the proxy classes:
 
 ## Automated tests
 
-Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module in the
-`web/modules/contrib` folder.
+Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module in the `web/modules/contrib` folder.
 
 ```sh
 (cd «DRUPAL_ROOT»/web; ./vendor/bin/phpunit modules/contrib/azure_ad_delta_sync_drupal/tests/src/Functional)
@@ -64,8 +58,7 @@ Requires a full Drupal installation with the `azure_ad_delta_sync_drupal` module
 
 ### Coding standards
 
-The code follows the [Drupal Coding
-Standards](https://www.drupal.org/docs/develop/standards) (cf.
+The code follows the [Drupal Coding Standards](https://www.drupal.org/docs/develop/standards) (cf.
 [`phpcs.xml.dist`](phpcs.xml.dist)) and can be checked by running
 
 ```sh
@@ -96,14 +89,18 @@ phpstan is used to perform static analysis of the code. Run the following script
 ./scripts/code-analysis
 ```
 
+### Rector
+
+Automatic code upgrades
+
+`./scripts/rector`
+
 ### GitHub Actions
 
-We use [GitHub Actions](https://github.com/features/actions) to check coding
-standards, perform code analysis and run automated tests whenever a pull request
-is made (cf. [`.github/workflows/pr.yaml`](.github/workflows/pr.yaml)).
+We use [GitHub Actions](https://github.com/features/actions) to check coding standards, perform code analysis and run
+automated tests whenever a pull request is made (cf. [`.github/workflows/pr.yaml`](.github/workflows/pr.yaml)).
 
-Before making a pull request you can run the GitHub Actions locally to check for
-any problems:
+Before making a pull request you can run the GitHub Actions locally to check for any problems:
 
 [Install `act`](https://github.com/nektos/act#installation) and run
 

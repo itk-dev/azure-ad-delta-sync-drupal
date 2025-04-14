@@ -181,3 +181,10 @@ jobs:
           ./scripts/rector
       - name: Check nothing has changed
         run: git diff --exit-code
+  
+  test-command-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./scripts/run-command
