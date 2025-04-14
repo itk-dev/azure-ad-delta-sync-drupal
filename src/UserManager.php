@@ -150,7 +150,7 @@ class UserManager implements UserManagerInterface {
     $userIdField = $this->configHelper->getConfiguration('drupal.user_id_field');
 
     $this->logger->info(
-      'Retaining %count users',
+      'Retaining %count user(s)',
            [
              '%count' => count($users),
            ]
