@@ -227,9 +227,9 @@ class UserManager implements UserManagerInterface {
 
         $this->logger->info(
           'Deleting @count user(s)',
-               [
-                 '%count' => count($deletedUserIds),
-               ]
+          [
+            '%count' => count($deletedUserIds),
+          ]
         );
 
         $this->requestStack->getCurrentRequest()
