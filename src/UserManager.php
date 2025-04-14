@@ -171,9 +171,9 @@ class UserManager implements UserManagerInterface {
       $this->logger->info(
         'Retaining user %user (%id)',
         [
-           '%user' => $user->label(),
-           '%id' => $user->id(),
-         ]
+          '%user' => $user->label(),
+          '%id' => $user->id(),
+        ]
       );
 
       unset($this->userIds[$user->id()]);
