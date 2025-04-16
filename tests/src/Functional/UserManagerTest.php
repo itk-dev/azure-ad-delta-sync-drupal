@@ -21,7 +21,13 @@ class UserManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['azure_ad_delta_sync'];
+  protected static $modules = [
+    'azure_ad_delta_sync',
+    // We need access to role and user entities.
+    'user',
+    // And some system entities too.
+    'system',
+  ];
 
   /**
    * {@inheritdoc}

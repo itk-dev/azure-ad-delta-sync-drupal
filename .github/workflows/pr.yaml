@@ -115,45 +115,6 @@ jobs:
         run: |
            ./scripts/code-analysis
 
-  unit_tests:
-    name: PHP - Unit test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [ '8.3' ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run tests
-        run: |
-          # https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-nginx.html
-          docker run -d --publish 8888:80 --env WEB_DOCUMENT_ROOT=/app/web --name drupal_test webdevops/php-nginx:${{ matrix.php-versions }}-alpine
-
-          # Create a new Drupal project
-          docker exec drupal_test composer --no-interaction create-project drupal/recommended-project:10.2.x-dev --stability=dev app
-          # Install Drush
-          docker exec drupal_test composer --working-dir=/app require drush/drush
-          # Require test dependencies
-          docker exec drupal_test composer --working-dir=/app require --dev phpspec/prophecy-phpunit --with-all-dependencies
-
-          # Copy our code into the Drupal module folder
-          docker exec drupal_test mkdir -p /app/web/modules/contrib/azure-ad-delta-sync-drupal
-          for source in *; do
-            docker cp $source drupal_test:/app/web/modules/contrib/azure-ad-delta-sync-drupal
-          done
-
-          # Add our module as a composer repository.
-          docker exec drupal_test composer --working-dir=/app config repositories.itk-dev/azure-ad-delta-sync-drupal path web/modules/contrib/azure-ad-delta-sync-drupal
-          # Require our module.
-          docker exec drupal_test composer --working-dir=/app require 'itk-dev/azure-ad-delta-sync-drupal:*'
-
-          # Copy our phpunit configuration into the Drupal folder.
-          docker cp .github/resources/phpunit.xml drupal_test:/app/web
-          # Install Drupal
-          docker exec drupal_test /app/vendor/bin/drush site:install minimal --db-url=sqlite://localhost//tmp/db.sqlite
-          # Enable our module
-          docker exec drupal_test /app/vendor/bin/drush --yes pm:enable azure_ad_delta_sync
-          # Run our module tests
-          docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure-ad-delta-sync-drupal/tests/src/Functional'
   markdown-lint:
     name: Markdown lint
     runs-on: ubuntu-latest
@@ -181,10 +142,17 @@ jobs:
           ./scripts/rector
       - name: Check nothing has changed
         run: git diff --exit-code
-  
+
   test-command-runs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: |
           ./scripts/run-command
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          ./scripts/test
