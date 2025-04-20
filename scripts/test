@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -o errexit -o errtrace -o noclobber -o nounset -o pipefail
+IFS=$'\n\t'
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$script_dir"
+
+execute() {
+  # We pass an absolute path to the configuration; /opt/drupal is our working directory.
+  shell vendor/bin/phpunit --configuration "/opt/drupal/web/core/phpunit.xml.dist" "$module_path/tests"
+}
+
+source "$script_dir/base"

@@ -2,7 +2,7 @@
 
 services:
   drupal:
-    image: drupal:10-apache
+    image: drupal:${DRUPAL_VERSION:-10}-apache
     ports:
       - 80
     volumes:
