@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-20](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/20)
+  Updated and added workflows
 * [PR-18](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/18)
   * Update `container->get` after autowire change
   * Change logging: <https://drupalize.me/blog/how-log-messages-drupal-8>
