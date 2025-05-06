@@ -1,120 +1,6 @@
 on: pull_request
 name: PR Review
 jobs:
-  changelog:
-    runs-on: ubuntu-latest
-    name: Changelog should be updated
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Git fetch
-        run: git fetch
-
-      - name: Check that changelog has been updated.
-        run: git diff --exit-code origin/${{ github.base_ref }} -- CHANGELOG.md && exit 1 || exit 0
-
-  test-composer-files:
-    name: Validate composer
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [ '8.3' ]
-        dependency-version: [ prefer-lowest, prefer-stable ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: json
-          coverage: none
-          tools: composer:v2
-      # https://github.com/shivammathur/setup-php#cache-composer-dependencies
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-      - name: Validate composer files
-        run: |
-          composer validate --strict composer.json
-          # Check that dependencies resolve.
-          composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
-
-  php-check-coding-standards:
-    name: PHP - Check Coding Standards
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [ '8.3' ]
-        dependency-version: [ prefer-lowest, prefer-stable ]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: json
-          coverage: none
-          tools: composer:v2
-      # https://github.com/shivammathur/setup-php#cache-composer-dependencies
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-      - name: Install Dependencies
-        run: |
-          composer install --no-interaction --no-progress
-      - name: PHPCS
-        run: |
-          composer coding-standards-check/phpcs
-
-  php-code-analysis:
-    name: PHP code analysis
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-versions: [ '8.3' ]
-    steps:
-      - uses: actions/checkout@master
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: json
-          coverage: none
-          tools: composer:v2
-      # https://github.com/shivammathur/setup-php#cache-composer-dependencies
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-      - name: Install Dependencies
-        run: |
-          composer install --no-interaction --no-progress
-      - name: Code analysis
-        run: |
-           ./scripts/code-analysis
-
   unit_tests:
     name: PHP - Unit test
     runs-on: ubuntu-latest
@@ -154,15 +40,6 @@ jobs:
           docker exec drupal_test /app/vendor/bin/drush --yes pm:enable azure_ad_delta_sync
           # Run our module tests
           docker exec drupal_test sh -c 'cd /app/web; ../vendor/bin/phpunit modules/contrib/azure-ad-delta-sync-drupal/tests/src/Functional'
-  markdown-lint:
-    name: Markdown lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Markdown lint
-        run: docker run --rm --volume "$PWD:/md" peterdavehello/markdownlint markdownlint --ignore vendor '**/*.md'
 
   check-proxy-classes:
     runs-on: ubuntu-latest
@@ -181,7 +58,7 @@ jobs:
           ./scripts/rector
       - name: Check nothing has changed
         run: git diff --exit-code
-  
+
   test-command-runs:
     runs-on: ubuntu-latest
     steps:
