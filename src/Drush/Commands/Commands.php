@@ -9,30 +9,27 @@ use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Exceptions\CommandFailedException;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drush\Commands\AutowireTrait;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Drupal\azure_ad_delta_sync\UserManager;
+use Drupal\azure_ad_delta_sync\Controller;
 
 /**
  * Drush commands.
  */
 final class Commands extends DrushCommands {
 
+  use AutowireTrait;
+
   /**
    * Commands constructor.
    */
   public function __construct(
+    #[Autowire(service: Controller::class)]
     private readonly ControllerInterface $controller,
+    #[Autowire(service: UserManager::class)]
     private readonly UserManagerInterface $userManager,
   ) {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): self {
-    return new static(
-      $container->get('azure_ad_delta_sync.controller'),
-      $container->get('azure_ad_delta_sync.user_manager'),
-    );
   }
 
   /**
@@ -60,7 +57,8 @@ final class Commands extends DrushCommands {
 
     $this->userManager->setOptions([
       'dry-run' => $dryRun,
-      'debug' => $this->output->isDebug(),
+      // Shows list of users that are picked for deletion.
+      'debug' => $this->output()->isDebug(),
     ]);
 
     if ($dryRun) {

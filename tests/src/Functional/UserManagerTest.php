@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\azure_ad_delta_sync\Functional;
 
+use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
 use Drupal\azure_ad_delta_sync\UserManager;
 use Drupal\azure_ad_delta_sync\UserManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -20,7 +21,7 @@ class UserManagerTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['azure_ad_delta_sync', 'drupal_psr6_cache'];
+  protected static $modules = ['azure_ad_delta_sync'];
 
   /**
    * {@inheritdoc}
@@ -146,13 +147,11 @@ class UserManagerTest extends BrowserTestBase {
     $logger = $this->createMock(LoggerInterface::class);
 
     return new UserManager(
-      $this->container->get('drupal_psr6_cache.cache_item_pool'),
       $this->container->get('entity_type.manager'),
-      $configFactory,
       $this->container->get('database'),
       $this->container->get('request_stack'),
-      $this->container->get('module_handler'),
-      $logger
+      $logger,
+      $this->container->get(ConfigHelper::class),
     );
   }
 

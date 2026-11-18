@@ -109,7 +109,7 @@ class ConfigHelper {
   /**
    * Get configuration.
    */
-  public function getConfiguration(string $configName): array|string {
+  public function getConfiguration(string $configName): array|string|null {
     return $this->moduleConfig->get($configName);
   }
 
@@ -138,7 +138,7 @@ class ConfigHelper {
   private function unescapeProviderId(string $input) {
     // Drupal will not accept a . in configuration keys.
     // https://www.drupal.org/node/2297311
-    return str_replace("__dot__", ".", $input);
+    return str_replace('__dot__', '.', $input);
   }
 
 }

@@ -130,11 +130,13 @@ class UserManager implements UserManagerInterface {
   public function collectUsersForDeletionList(): void {
     $managedUserIds = $this->loadManagedUserIds();
     $this->userIds = $managedUserIds;
-    $this->logger->info($this->formatPlural(
-      count($this->userIds),
-      '1 user marked for deletion.',
-      '@count users marked for deletion.'
-    ));
+
+    $this->logger->info(
+      '%count user(s) marked for deletion.',
+           [
+             '%count' => count($this->userIds),
+           ]
+    );
   }
 
   /**
@@ -147,11 +149,13 @@ class UserManager implements UserManagerInterface {
     $userIdClaim = $this->configHelper->getConfiguration('azure.user_id_claim');
     $userIdField = $this->configHelper->getConfiguration('drupal.user_id_field');
 
-    $this->logger->info($this->formatPlural(
-      count($users),
-      'Retaining one user.',
-      'Retaining @count users.'
-    ));
+    $this->logger->info(
+      'Retaining %count user(s)',
+           [
+             '%count' => count($users),
+           ]
+    );
+
     $userIdsToKeep = array_map(
         static function (array $user) use ($userIdClaim) {
           if (!isset($user[$userIdClaim])) {
@@ -162,11 +166,16 @@ class UserManager implements UserManagerInterface {
         $users
       );
 
-    $this->logger->debug(json_encode($users, JSON_PRETTY_PRINT));
-
     $users = $this->userStorage->loadByProperties([$userIdField => $userIdsToKeep]);
     foreach ($users as $user) {
-      $this->logger->info($this->t('Retaining user @name.', ['@name' => $user->label()]));
+      $this->logger->info(
+        'Retaining user %user (%id)',
+        [
+          '%user' => $user->label(),
+          '%id' => $user->id(),
+        ]
+      );
+
       unset($this->userIds[$user->id()]);
     }
   }
@@ -184,25 +193,45 @@ class UserManager implements UserManagerInterface {
       $deletedUserIds[] = $userId;
     }
 
-    $this->logger->info($this->formatPlural(
-      count($deletedUserIds),
-      'One user to be deleted',
-      '@count users to be deleted'
-    ));
+    $this->logger->info(
+      '@count user(s) to be deleted',
+           [
+             '%count' => count($deletedUserIds),
+           ]
+    );
+
     if ($this->options['debug'] ?? FALSE) {
       $users = $this->userStorage->loadMultiple($deletedUserIds);
-      foreach ($users as $user) {
-        $this->logger->debug(sprintf('User to be deleted: %s (#%s)', $user->label(), $user->id()));
+      if (empty($users)) {
+
+        $this->logger->info('No users to be deleted');
+
+      }
+      else {
+        foreach ($users as $user) {
+
+          $this->logger->info(
+            'User to be deleted: %user (%id)',
+                 [
+                   '%user' => $user->label(),
+                   '%id' => $user->id(),
+                 ]
+          );
+
+        }
       }
     }
 
     if (!($this->options['dry-run'] ?? FALSE)) {
       if (!empty($deletedUserIds)) {
-        $this->logger->info($this->formatPlural(
-          count($deletedUserIds),
-          'Deleting one user',
-          'Deleting @count users'
-        ));
+
+        $this->logger->info(
+          'Deleting @count user(s)',
+          [
+            '%count' => count($deletedUserIds),
+          ]
+        );
+
         $this->requestStack->getCurrentRequest()
           // batch_process needs a route in the request (!)
           ->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('<none>'));

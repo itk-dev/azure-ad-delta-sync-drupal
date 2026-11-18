@@ -7,15 +7,18 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drush\Commands\AutowireTrait;
 use Drupal\azure_ad_delta_sync\Helpers\ConfigHelper;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Drupal\azure_ad_delta_sync\UserManager;
 
 /**
  * Settings form.
  */
 final class SettingsForm extends ConfigFormBase {
-  public const string SETTINGS = 'azure_ad_delta_sync.settings';
+  use AutowireTrait;
 
+  public const string SETTINGS = 'azure_ad_delta_sync.settings';
   /**
    * The user storage.
    *
@@ -48,25 +51,14 @@ final class SettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $configFactory,
     EntityTypeManagerInterface $entityTypeManager,
+    #[Autowire(service: UserManager::class)]
     private readonly UserManagerInterface $userManager,
+    #[Autowire(service: ConfigHelper::class)]
     private readonly ConfigHelper $configHelper,
   ) {
     parent::__construct($configFactory);
     $this->userStorage = $entityTypeManager->getStorage('user');
     $this->roleStorage = $entityTypeManager->getStorage('user_role');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public static function create(ContainerInterface $container): static {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('entity_type.manager'),
-      $container->get('azure_ad_delta_sync.user_manager'),
-      $container->get('azure_ad_delta_sync.config_helper'),
-    );
   }
 
   /**
