@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-18
+
+* [PR-21](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/21)
+  Allow `symfony/http-client` `^7.2`. The constraint `7.2` allowed only 7.2.x,
+  which has no security fixes.
+
 ## [2.0.1] - 2025-03-04
 
 * [PR-16](https://github.com/itk-dev/azure-ad-delta-sync-drupal/pull/16)
@@ -33,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Initial release
 
-[Unreleased]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.1...HEAD
+[Unreleased]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.2...HEAD
+[2.0.2]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/itk-dev/azure-ad-delta-sync-drupal/releases/tag/1.0.0
